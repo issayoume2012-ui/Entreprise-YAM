@@ -395,56 +395,52 @@ if "panier" not in st.session_state:
 # =====================================================
 
 elif selected == "Produits":
-
     st.title("🌾 Produits disponibles")
-
     produits = [
 
-        ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
-        ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg"),
-        ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg"),
-        ("cr.jpg", "Carottes", "3000 FCFA par sac de 5Kg"),
-        ("pm.jpg", "Piments", "2000 FCFA par sac de 3Kg"),
-        ("cc.jpg", "Concombres", "2800 FCFA par sac de 3Kg"),
-        ("pt.jpg", "Pommes de terre", "4500 FCFA par sachet de 5Kg"),
-        ("or.jpg", "Oranges", "4000 FCFA par sac de 3Kg"),
+    ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
+    ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg"),
+    ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg"),
+    ("cr.jpg", "Carottes", "3000 FCFA par sac de 5Kg"),
+    ("pm.jpg", "Piments", "2000 FCFA par sac de 3Kg"),
+    ("cc.jpg", "Concombres", "2800 FCFA par sac de 3Kg"),
+    ("pt.jpg", "Pommes de terre", "4500 FCFA par sachet de 5Kg"),
+    ("or.jpg", "Oranges", "4000 FCFA par sac de 3Kg"),
 
-        ("mangue.jpg", "Mangues", "3500 FCFA par panier de 5Kg"),
-        ("banane.jpg", "Bananes", "2500 FCFA par régime"),
-        ("mais.jpg", "Maïs", "7000 FCFA par sac de 25Kg"),
-        ("arachide.jpg", "Arachides", "8500 FCFA par sac de 10Kg"),
+    ("mangue.jpg", "Mangues", "3500 FCFA par panier de 5Kg"),
+    ("banane.jpg", "Bananes", "2500 FCFA par régime"),
+    ("mais.jpg", "Maïs", "7000 FCFA par sac de 25Kg"),
+    ("arachide.jpg", "Arachides", "8500 FCFA par sac de 10Kg"),
 
-        ("riz.jpg", "Riz local", "12000 FCFA par sac de 25Kg"),
-        ("mil.jpg", "Mil", "9000 FCFA par sac de 20Kg"),
-        ("pasteque.jpg", "Pastèques", "6000 FCFA l’unité"),
-        ("citron.jpg", "Citrons", "2000 FCFA par filet"),
+    ("riz.jpg", "Riz local", "12000 FCFA par sac de 25Kg"),
+    ("mil.jpg", "Mil", "9000 FCFA par sac de 20Kg"),
+    ("pasteque.jpg", "Pastèques", "6000 FCFA l’unité"),
+    ("citron.jpg", "Citrons", "2000 FCFA par filet"),
 
-        ("niebe.jpg", "Niébé", "6500 FCFA par sac de 10Kg"),
-        ("gombo.jpg", "Gombos", "2200 FCFA par panier"),
-        ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg"),
-        ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
+    ("niebe.jpg", "Niébé", "6500 FCFA par sac de 10Kg"),
+    ("gombo.jpg", "Gombos", "2200 FCFA par panier"),
+    ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg"),
+    ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
 
-    ]
+]
 
     cols = st.columns(5)
 
-    for i, (image, nom, prix) in enumerate(produits):
+    for i, p in enumerate(produits):
+
+        image, nom, prix = p
 
         with cols[i % 5]:
-
-            try:
-                st.image(
-                    image,
-                    use_container_width=True
-                )
-            except:
-                st.warning(f"Image absente : {image}")
+            st.image(
+                image,
+                use_container_width=True
+            )
 
             st.markdown(
                 f"""
                 <div class='card'>
-                    <h4>{nom}</h4>
-                    <p>{prix}</p>
+                <h4>{nom}</h4>
+                <p>{prix}</p>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -452,9 +448,9 @@ elif selected == "Produits":
 
             qte = st.number_input(
                 "Qté",
-                min_value=1,
-                max_value=100,
-                value=1,
+                1,
+                100,
+                1,
                 key=f"qte_{i}"
             )
 
@@ -466,13 +462,19 @@ elif selected == "Produits":
                 st.session_state.panier.append({
 
                     "produit": nom,
+
                     "prix": prix,
+
                     "quantite": qte
 
                 })
 
-                st.success(f"{nom} ajouté au panier")
+                st.success(
+                    "Ajouté au panier"
+                )
 
+# =====================================================
+# =====================================================
 # =====================================================
 # COMMANDE
 # =====================================================
