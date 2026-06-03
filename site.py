@@ -426,7 +426,6 @@ elif selected == "Produits":
         image, nom, prix = p
 
         with cols[i % 5]:
-
             st.image(
                 image,
                 use_container_width=True
