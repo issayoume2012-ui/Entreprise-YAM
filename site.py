@@ -390,7 +390,7 @@ if "historique" not in st.session_state:
 # =====================================================
 
 elif selected == "Produits":
-
+    st.title("🌾 Produits disponibles")
     produits = [
 
     ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
@@ -418,9 +418,6 @@ elif selected == "Produits":
     ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
 
 ]
-
-
-    st.title("🌾 Produits disponibles")
 
     cols = st.columns(5)
 
