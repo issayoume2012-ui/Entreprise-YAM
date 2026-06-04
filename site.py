@@ -471,134 +471,208 @@ elif selected == "Produits":
 
 # =====================================================
 # =====================================================
-# COMMANDE
+# =====================================================
+# COMMANDE ULTIME
 # =====================================================
 
 elif selected == "Commande":
 
-    import urllib.parse
+    st.title("📦 Finalisation de commande")
 
-    numero_whatsapp = "221777473170"
-    email_dest = "issayoume2012@gmail.com"
+    NUMERO_WHATSAPP = "221777473170"
+    EMAIL_DEST = "issayoume2012@gmail.com"
 
-    if "panier" not in st.session_state:
-        st.session_state.panier = []
+    panier = st.session_state.panier
 
-    if "historique" not in st.session_state:
-        st.session_state.historique = []
+    # ==========================
+    # PANIER VIDE
+    # ==========================
 
-    st.title("📦 Commande")
+    if not panier:
 
-    # =====================================================
-    # PANIER
-    # =====================================================
+        st.warning("🛒 Aucun produit dans le panier")
 
-    st.subheader("🛒 Panier")
-
-    if len(st.session_state.panier) == 0:
-
-        st.warning(
-            "Votre panier est vide"
+        st.info(
+            "Ajoutez des produits depuis la rubrique Produits"
         )
 
-    else:
+        st.stop()
 
-        total_articles = 0
+    # ==========================
+    # APERCU PANIER
+    # ==========================
 
-        for i, item in enumerate(
-            st.session_state.panier
-        ):
+    st.subheader("🛒 Résumé du panier")
 
-            c1, c2, c3, c4 = st.columns(
-                [4,2,3,1]
+    total_articles = 0
+
+    for i, item in enumerate(panier):
+
+        c1, c2, c3, c4 = st.columns([4,2,3,1])
+
+        with c1:
+            st.markdown(
+                f"**{item['produit']}**"
             )
 
-            c1.write(item["produit"])
-
-            c2.write(
+        with c2:
+            st.write(
                 f"x {item['quantite']}"
             )
 
-            c3.write(
+        with c3:
+            st.write(
                 item["prix"]
             )
 
-            total_articles += item[
-                "quantite"
-            ]
+        with c4:
 
-            if c4.button(
+            if st.button(
                 "❌",
-                key=f"sup_{i}"
+                key=f"supprimer_{i}"
             ):
 
-                st.session_state.panier.pop(i)
+                panier.pop(i)
+
                 st.rerun()
 
-        st.info(
-            f"{total_articles} article(s) dans le panier"
-        )
+        total_articles += item["quantite"]
 
-        st.markdown("---")
+    st.success(
+        f"{total_articles} article(s) sélectionné(s)"
+    )
 
-        # =====================================================
-        # INFOS CLIENT
-        # =====================================================
+    st.divider()
+
+    # ==========================
+    # INFOS CLIENT
+    # ==========================
+
+    st.subheader("👤 Informations client")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
 
         nom = st.text_input(
-            "Nom complet"
+            "Nom complet",
+            placeholder="Ex: Issa Youme"
         )
 
         telephone = st.text_input(
-            "Téléphone"
+            "Téléphone",
+            placeholder="77xxxxxxx"
         )
 
         adresse = st.text_input(
-            "Adresse"
+            "Adresse livraison"
         )
 
-        commentaire = st.text_area(
-            "Commentaire"
-        )
+    with col2:
 
-        paiement = st.radio(
+        paiement = st.selectbox(
 
-            "Mode paiement",
+            "Méthode paiement",
 
             [
 
                 "Présentiel",
-
                 "Wave",
-
                 "Orange Money"
 
             ]
 
         )
 
-        if paiement == "Wave":
+        commentaire = st.text_area(
 
-            st.success(
-                "Wave : 221 77 747 31 70"
+            "Commentaire",
+
+            placeholder="Précisions livraison..."
+
+        )
+
+    # ==========================
+    # NUMEROS PAIEMENT
+    # ==========================
+
+    if paiement == "Wave":
+
+        st.info(
+            "Wave : 221 77 747 31 70"
+        )
+
+    elif paiement == "Orange Money":
+
+        st.info(
+            "Orange Money : 221 77 747 31 70"
+        )
+
+    st.divider()
+
+    # ==========================
+    # RESUME COMMANDE
+    # ==========================
+
+    with st.expander(
+        "📄 Voir le résumé commande",
+        expanded=True
+    ):
+
+        for p in panier:
+
+            st.write(
+
+                f"• {p['produit']}"
+
+                f" x {p['quantite']}"
+
             )
 
-        elif paiement == "Orange Money":
+    # ==========================
+    # GENERATION COMMANDE
+    # ==========================
 
-            st.success(
-                "Orange Money : 221 77 747 31 70"
+    if st.button(
+
+        "✅ Générer commande",
+
+        use_container_width=True,
+
+        type="primary"
+
+    ):
+
+        if not nom:
+
+            st.error(
+                "Nom obligatoire"
             )
 
-        # =====================================================
-        # VALIDATION
-        # =====================================================
+        elif not telephone:
 
-        if st.button(
-            "✅ Préparer commande"
-        ):
+            st.error(
+                "Téléphone obligatoire"
+            )
 
-            texte = f"""
-Nouvelle commande YouAgronoMe
+        else:
+
+            texte_produits = ""
+
+            for p in panier:
+
+                texte_produits += (
+
+                    f"• {p['produit']} "
+
+                    f"x {p['quantite']} "
+
+                    f"({p['prix']})\n"
+
+                )
+
+            message = f"""
+🌾 Nouvelle commande YouAgronoMe
 
 Nom : {nom}
 
@@ -608,56 +682,54 @@ Adresse : {adresse}
 
 Paiement : {paiement}
 
-Commentaire : {commentaire}
-
 Produits :
+
+{texte_produits}
+
+Commentaire :
+
+{commentaire}
 """
-
-            for p in st.session_state.panier:
-
-                texte += f"""
-
-• {p['produit']}
-Qté : {p['quantite']}
-Prix : {p['prix']}
-"""
-
-            # sauvegarde historique
-            st.session_state.historique.append({
-
-                "client": nom,
-
-                "paiement": paiement,
-
-                "commande":
-                st.session_state.panier.copy()
-
-            })
 
             whatsapp_link = (
 
                 "https://wa.me/"
-                + numero_whatsapp
+
+                + NUMERO_WHATSAPP
+
                 + "?text="
+
                 + urllib.parse.quote(
-                    texte
+                    message
                 )
 
             )
 
             email_link = (
 
-                f"mailto:{email_dest}"
+                f"mailto:{EMAIL_DEST}"
 
-                f"?subject=Commande"
+                f"?subject=Commande YouAgronoMe"
 
                 f"&body="
 
                 + urllib.parse.quote(
-                    texte
+                    message
                 )
 
             )
+
+            # historique
+
+            st.session_state.historique.append({
+
+                "client": nom,
+
+                "paiement": paiement,
+
+                "commande": panier.copy()
+
+            })
 
             st.success(
                 "Commande prête ✅"
@@ -689,62 +761,87 @@ Prix : {p['prix']}
 
                 )
 
-            if st.button(
-                "🧹 Vider panier"
-            ):
+    # ==========================
+    # ACTIONS RAPIDES
+    # ==========================
 
-                st.session_state.panier = []
-                st.rerun()
+    st.divider()
 
-    # =====================================================
+    a1, a2 = st.columns(2)
+
+    with a1:
+
+        if st.button(
+
+            "🧹 Vider panier",
+
+            use_container_width=True
+
+        ):
+
+            st.session_state.panier = []
+
+            st.rerun()
+
+    with a2:
+
+        st.metric(
+
+            "Total Articles",
+
+            total_articles
+
+        )
+
+    # ==========================
     # HISTORIQUE
-    # =====================================================
+    # ==========================
 
-    st.markdown("---")
+    st.divider()
 
     st.subheader(
         "📜 Historique commandes"
     )
 
-    if len(
-        st.session_state.historique
-    ) == 0:
+    historique = st.session_state.historique
 
-        st.write(
-            "Aucune commande"
+    if not historique:
+
+        st.info(
+            "Aucune commande enregistrée"
         )
 
     else:
 
-        for i, hist in enumerate(
+        for i, cmd in enumerate(
 
-            st.session_state.historique,
+            historique,
 
             start=1
 
         ):
 
-            st.markdown(
-                f"### Commande {i}"
-            )
+            with st.expander(
 
-            st.write(
-                f"Client : {hist['client']}"
-            )
+                f"Commande {i} - {cmd['client']}"
 
-            st.write(
-                f"Paiement : {hist['paiement']}"
-            )
-
-            for prod in hist[
-                "commande"
-            ]:
+            ):
 
                 st.write(
 
-                    f"• {prod['produit']} x {prod['quantite']}"
+                    f"Paiement : {cmd['paiement']}"
 
                 )
+
+                for p in cmd["commande"]:
+
+                    st.write(
+
+                        f"• {p['produit']}"
+
+                        f" x {p['quantite']}"
+
+                    )
 # =====================================================
 # CONSEILS
 # =====================================================
