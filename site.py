@@ -85,99 +85,311 @@ div[data-testid="stMarkdownContainer"] > div {
 # =====================================================
 
 import streamlit as st
+import urllib.parse
 
 # =====================================================
-# ENGINE STYLING SIDEBAR XXL PREMIUM (CSS ADVANCED)
+# ENGINE STYLING SIDEBAR & COMPOSANTS XXL (CSS ADVANCED)
 # =====================================================
 st.markdown("""
 <style>
-    /* Cibler la barre latérale globale */
+    /* Configuration globale de la barre latérale */
     [data-testid="stSidebar"] {
         background-color: #f8faf8 !important;
-        padding-top: 20px;
+        padding-top: 15px;
     }
-
-    /* Titre du menu de navigation */
-    [data-testid="stSidebar"] p {
-        font-size: 1.4rem !important;
-        font-weight: 800 !important;
-        color: #1b5e20 !important;
-        letter-spacing: 0.5px;
-        margin-bottom: 15px !important;
-    }
-
-    /* Conteneur des options Radio */
-    [data-testid="stSidebar"] .stRadio > div {
-        gap: 12px !important;
-    }
-
-    /* Redessiner chaque option de la liste pour en faire un bouton XXL */
-    [data-testid="stSidebar"] .stRadio label {
+    
+    /* Transformation de l'Expander en un Bouton-Menu XXL */
+    [data-testid="stSidebar"] .stExpander {
         background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        padding: 16px 20px !important;
+        border: 2px solid #e2e8f0 !important;
         border-radius: 16px !important;
-        font-size: 1.2rem !important;  /* Taille XXL */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+        margin-bottom: 25px !important;
+        overflow: hidden;
+    }
+    
+    /* Style du bandeau cliquable du menu */
+    [data-testid="stSidebar"] .stExpander summary {
+        padding: 16px 20px !important;
+        background: linear-gradient(135deg, #1b5e20, #2e7d32) !important;
+        color: white !important;
+    }
+    
+    /* Style du texte à l'intérieur du bouton du menu */
+    [data-testid="stSidebar"] .stExpander summary span p {
+        font-size: 1.2rem !important;
+        font-weight: 800 !important;
+        color: white !important;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Flèche du menu déroulant */
+    [data-testid="stSidebar"] .stExpander summary svg {
+        fill: #ffb300 !important;
+        transform: scale(1.3);
+    }
+
+    /* Redessiner les options radio à l'intérieur du menu déroulant */
+    [data-testid="stSidebar"] .stRadio > div {
+        gap: 8px !important;
+        padding: 10px 0;
+    }
+
+    [data-testid="stSidebar"] .stRadio label {
+        background-color: #fafbfc !important;
+        border: 1px solid #e1e8ed !important;
+        padding: 14px 18px !important;
+        border-radius: 12px !important;
+        font-size: 1.1rem !important;
         font-weight: 700 !important;
         color: #37474f !important;
-        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+        transition: all 0.25s ease !important;
         cursor: pointer !important;
         width: 100% !important;
         display: flex !important;
         align-items: center !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02) !important;
     }
 
-    /* Effet au survol (Hover) */
+    /* Effet au survol des options du menu */
     [data-testid="stSidebar"] .stRadio label:hover {
-        transform: translateX(5px);
+        transform: translateX(4px);
         border-color: #2e7d32 !important;
         color: #2e7d32 !important;
-        box-shadow: 0 8px 15px rgba(46, 125, 50, 0.08) !important;
+        background-color: #f1f8f2 !important;
     }
 
-    /* Style de l'option active (Sélectionnée) */
+    /* Option active sélectionnée */
     [data-testid="stSidebar"] .stRadio div[aria-checked="true"] label {
-        background: linear-gradient(135deg, #1b5e20, #2e7d32) !important;
-        color: #ffffff !important;
+        background: #e8f5e9 !important;
+        color: #1b5e20 !important;
         border-color: #1b5e20 !important;
-        box-shadow: 0 10px 20px rgba(27, 94, 32, 0.2) !important;
+        border-left: 5px solid #ffb300 !important;
     }
 
-    /* Masquer le petit cercle radio natif de Streamlit pour un rendu 100% bouton applicatif */
+    /* Masquer les boutons radio ronds natifs de Streamlit */
     [data-testid="stSidebar"] .stRadio div[role="radiogroup"] [data-testid="stWidgetMarkdownInsideLabel"]::before {
         display: none !important;
     }
     [data-testid="stSidebar"] .stRadio input[type="radio"] {
         display: none !important;
     }
+
+    /* Styles pour les sections de contenu (Conseils, Réalisations, etc.) */
+    .conseil-hero { padding: 65px 40px; border-radius: 24px; text-align: center; color: white; background: linear-gradient(135deg, rgba(27, 94, 32, 0.9), rgba(1, 87, 155, 0.75)), url('https://images.unsplash.com/photo-1464226184884-fa280b87c399'); background-size: cover; background-position: center; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(27, 94, 32, 0.2); }
+    .conseil-hero h1 { font-size: 42px !important; font-weight: 900 !important; margin-bottom: 12px !important; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
+    .conseil-hero p { font-size: 18px !important; opacity: 0.95; max-width: 700px; margin: 0 auto !important; }
+    .conseil-card { background: rgba(255, 255, 255, 0.9); border: 1px solid #e2e8f0; padding: 30px 24px; border-radius: 20px; min-height: 310px; box-shadow: 0 6px 20px rgba(0,0,0,0.04); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; justify-content: flex-start; margin-bottom: 20px; }
+    .conseil-card:hover { transform: translateY(-8px); box-shadow: 0 20px 35px rgba(27, 94, 32, 0.12); border-color: #2E7D32; }
+    .conseil-icon { font-size: 55px; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+    .conseil-title { color: #1A202C; font-size: 22px; font-weight: 800; margin: 0 0 15px 0; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; }
+    .conseil-item { font-size: 14px; color: #4A5568; margin: 8px 0 !important; display: flex; align-items: center; font-weight: 500; }
+    .quote-box { background: #f0f7f4; border-left: 5px solid #2E7D32; padding: 20px; border-radius: 4px 16px 16px 4px; margin: 30px 0; font-style: italic; }
+    .hero-title { font-size: 3.8rem !important; font-weight: 900 !important; color: #1b5e20; line-height: 1.1; margin-bottom: 20px; letter-spacing: -2px; }
+    .hero-subtitle { font-size: 1.4rem !important; color: #4e5d4e; max-width: 950px; line-height: 1.7; margin-bottom: 60px; }
+    .section-headline { font-size: 2.4rem !important; font-weight: 800 !important; color: #2e7d32; margin-top: 60px; margin-bottom: 40px; position: relative; padding-bottom: 15px; letter-spacing: -0.5px; }
+    .section-headline::after { content: ''; position: absolute; bottom: 0; left: 0; width: 80px; height: 5px; background-color: #ffb300; border-radius: 3px; }
+    .kpi-global-container { display: flex; justify-content: center; width: 100%; margin-bottom: 60px; }
+    .kpi-premium-box { width: 100%; max-width: 500px; background: linear-gradient(135deg, #ffffff, #f4f9f4); border: 1px solid #e0ebd3; border-radius: 24px; padding: 45px 30px; text-align: center; border-bottom: 8px solid #2e7d32; box-shadow: 0 20px 45px rgba(46, 125, 50, 0.06); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+    .kpi-premium-box:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(46, 125, 50, 0.15); border-color: #ffb300; }
+    .kpi-premium-val { font-size: 5rem !important; font-weight: 950 !important; color: #1b5e20; margin: 0; line-height: 1; white-space: nowrap; letter-spacing: -2px; }
+    .kpi-premium-lbl { font-size: 1.1rem !important; font-weight: 800; color: #43a047; margin-top: 20px !important; text-transform: uppercase; letter-spacing: 2px; }
+    .testimonial-global-card { background: #ffffff; border: 1px solid #eaeaea; border-radius: 24px; padding: 40px; margin-bottom: 30px; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.03); position: relative; transition: all 0.3s ease; }
+    .testimonial-global-card:hover { box-shadow: 0 25px 50px rgba(46, 125, 50, 0.09); border-color: #2e7d32; }
+    .testimonial-global-card::before { content: "“"; position: absolute; top: -15px; right: 35px; font-size: 10rem; color: rgba(255, 179, 0, 0.14); font-family: "Georgia", serif; }
+    .client-profile-meta { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; }
+    .client-avatar-placeholder { width: 55px; height: 55px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1b5e20; font-weight: 800; font-size: 1.3rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+    .client-title-block { display: flex; flex-direction: column; }
+    .client-main-name { font-size: 1.4rem !important; font-weight: 800; color: #1b5e20; margin: 0; }
+    .client-badge-role { align-self: flex-start; font-size: 0.8rem !important; font-weight: 700; color: #c48b00; background: #fff8e1; padding: 4px 14px; border-radius: 30px; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+    .testimonial-quote-text { font-size: 1.15rem !important; color: #37474f; line-height: 1.7; font-style: italic; background: #fbfcfd; padding: 22px; border-left: 5px solid #ffb300; border-radius: 0 20px 20px 0; margin: 0; }
+    .contact-card { background: #ffffff; padding: 30px 24px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 6px 20px rgba(0,0,0,0.04); min-height: 180px; transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
+    .contact-card:hover { transform: translateY(-5px); border-color: #2e7d32; box-shadow: 0 15px 30px rgba(46, 125, 50, 0.08); }
+    .contact-title { color: #2e7d32; font-size: 20px; font-weight: 800; margin-bottom: 15px; border-bottom: 2px solid #e8f5e9; padding-bottom: 6px; }
+    .contact-text { font-size: 15px; color: #4a5568; line-height: 1.8; font-weight: 500; }
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# NAVIGATION SIDERBAR XXL AVEC ICÔNES HARMONISÉES
+# SIDEBAR NAVIGATION : BOUTON MENU EXPANDER XXL
 # =====================================================
-selected = st.sidebar.radio(
-    "🌾 Navigation",
-    [
-        "🏠 Accueil",
-        "📦 Produits",
-        "🛒 Commande",
-        "🌿 Conseils",
-        "📈 Réalisations",
-        "🤝 Contact"
+with st.sidebar:
+    st.markdown("<h2 style='color:#1b5e20; font-weight:900; font-size:24px; margin-bottom:25px; text-align:center; letter-spacing:-0.5px;'>🌾 YouAgronoMe</h2>", unsafe_allow_html=True)
+    
+    # L'expander devient l'enveloppe du bouton menu principal
+    with st.expander("📂 Menu principal", expanded=True):
+        selected_raw = st.radio(
+            "Sélectionnez votre vue :", # Label masqué visuellement par le CSS, requis par Streamlit
+            [
+                "🏠 Accueil", 
+                "📦 Produits", 
+                "🛒 Commande", 
+                "🌿 Conseils", 
+                "📈 Réalisations", 
+                "🤝 Contact"
+            ],
+            index=3, # Se positionne par défaut sur "Conseils"
+            label_visibility="collapsed" # Masque le libellé pour garder un rendu ultra-pro
+        )
+
+    # Nettoyage de la chaîne (retrait de l'émoji) pour garantir la compatibilité logique
+    selected = selected_raw.split(" ")[1]
+
+# =====================================================
+# BLOC DE LOGIQUE DE NAVIGATION INTERNE
+# =====================================================
+if selected == "Accueil":
+    st.title("🏠 Accueil YouAgronoMe")
+    st.write("Bienvenue sur votre Hub d'agriculture connectée.")
+
+elif selected == "Produits":
+    st.title("📦 Nos Produits")
+    st.write("Découvrez notre catalogue de semences et d'intrants certifiés.")
+
+elif selected == "Commande":
+    st.title("🛒 Passer une Commande")
+    st.write("Interface de commande simplifiée.")
+
+# =====================================================
+# SELECTION : CONSEILS XXL 🌍
+# =====================================================
+elif selected == "Conseils":
+    st.markdown("""
+    <div class="conseil-hero">
+        <h1>🌾 Hub de Performance Agronomique</h1>
+        <p>Optimisez vos structures d'exploitation, accélérez vos rendements et basculez vers une agriculture de précision moderne.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # DATASET CONSEILS
+    conseils = [
+        ("💧", "Irrigation Intelligente", ["Arroser aux heures stratégiques", "Déployer le goutte-à-goutte", "Piloter via capteurs d'humidité", "Réduire le taux d'évaporation"], "**Focus Technique :** L'apport hydrique optimal se situe avant 7h ou après 18h. Le goutte-à-goutte permet d'économiser jusqu'à 45% de ressources en eau tout en ciblant directement l'appareil racinaire."),
+        ("🌱", "Fertilisation Équilibrée", ["Privilégier l'amendement organique", "Fractionner les apports nutritifs", "Analyser le profil de sol (N-P-K)", "Éviter la saturation chimique"], "**Focus Technique :** Le compost mûr améliore la structure globale du sol. Avant tout apport d'engrais, effectuez un test de pH pour maximiser l'assimilation des nutriments par la plante."),
+        ("🐛", "Protection Phytosanitaire", ["Mettre en place un diagnostic précoce", "Formuler des biopesticides locaux", "Appliquer la rotation des cultures", "Isoler immédiatement les foyers"], "**Focus Technique :** Utilisez des solutions à base de neem ou de piment pour repousser les nuisibles naturellement. Alterner les familles de cultures casse le cycle de reproduction des bio-agresseurs."),
+        ("🌾", "Conduite de Culture", ["Sélectionner des semences certifiées", "Respecter les densités de semis", "Exécuter des sarclages rigoureux", "Planifier les fenêtres de récolte"], "**Focus Technique :** Un espacement précis garantit à chaque plant un accès parfait à la lumière et aux nutriments. Le désherbage des 30 premiers jours est crucial pour éviter la concurrence."),
+        ("🌍", "Agroécologie & Durabilité", ["Régénérer le tissu microbien", "Pratiquer le paillage systématique", "Valoriser la biomasse résiduelle", "Soutenir les écosystèmes utiles"], "**Focus Technique :** Le paillage conserve l'humidité, empêche la pousse des herbes adventices et nourrit la faune du sol en se décomposant. C'est le pilier de l'agriculture de conservation."),
+        ("📈", "Business & Stratégie", ["Analyser les courbes des marchés", "Standardiser la qualité produit", "Créer des circuits courts de vente", "Intégrer les outils de suivi"], "**Focus Technique :** Suivez les fluctuations de prix sur les marchés locaux avant la récolte pour négocier efficacement. Le tri et le calibrage rigoureux augmentent la valeur perçue de 25%.")
     ]
-)
+
+    cols = st.columns(3)
+    for i, (icon, titre, points, detail) in enumerate(conseils):
+        with cols[i % 3]:
+            lignes_html = "".join([f'<div class="conseil-item">✅ {p}</div>' for p in points])
+            st.markdown(f"""
+            <div class="conseil-card">
+                <div class="conseil-icon">{icon}</div>
+                <h3 class="conseil-title">{titre}</h3>
+                <div>{lignes_html}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            with st.expander("🔍 Voir protocole complet"):
+                st.markdown(detail)
+
+    st.markdown("---")
+    c_gauche, c_droite = st.columns([5, 5])
+    
+    with c_gauche:
+        st.markdown("<h3 style='color: #1B5E20; margin-top:0;'>🎯 Recommandation Stratégique</h3>", unsafe_allow_html=True)
+        st.info("**Loi de l'optimum :** Pour maximiser vos rendements de manière exponentielle, n'isolez jamais vos actions. Le succès réside dans le triptyque : **Semence certifiée + Gestion hydrique localisée + Suivi nutritionnel organique rigoureux.**")
+        st.markdown("""<div class="quote-box">"Le sol n'est pas une simple surface de dépôt, c'est un organisme vivant qu'il faut nourrir pour qu'il nous nourrisse en retour."</div>""", unsafe_allow_html=True)
+
+    with c_droite:
+        st.markdown("<h3 style='color: #01579B; margin-top:0;'>🧮 Simulateur de Rendement & Irrigation Pro</h3>", unsafe_allow_html=True)
+        with st.container(border=True):
+            data_cultures = {
+                "Tomates 🍅": {"besoin_eau": 6, "rendement_m2": 4.5},
+                "Oignons 🧅": {"besoin_eau": 5, "rendement_m2": 3.8},
+                "Fraises 🍓": {"besoin_eau": 4, "rendement_m2": 2.5},
+                "Carottes 🥕": {"besoin_eau": 4.5, "rendement_m2": 4.0},
+                "Pommes de terre 🥔": {"besoin_eau": 5.5, "rendement_m2": 3.5},
+                "Riz / Maïs 🌾": {"besoin_eau": 8, "rendement_m2": 1.2}
+            }
+            culture_choisie = st.selectbox("Type de culture cible", list(data_cultures.keys()))
+            surface = st.number_input("Surface totale d'exploitation (en m²)", min_value=10, max_value=500000, value=500, step=50)
+            
+            besoin_eau_total = surface * data_cultures[culture_choisie]["besoin_eau"]
+            rendement_estime_kg = surface * data_cultures[culture_choisie]["rendement_m2"]
+            
+            m1, m2 = st.columns(2)
+            with m1: st.metric(label="Volume d'eau requis / jour", value=f"{besoin_eau_total:,} Litres", delta=f"{data_cultures[culture_choisie]['besoin_eau']} L / m²")
+            with m2: st.metric(label="Rendement moyen estimé", value=f"{rendement_estime_kg/1000:.2f} Tonnes" if rendimiento_estime_kg >= 1000 else f"{rendement_estime_kg:,} Kg", delta="Objectif optimal")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    EMAIL_CONSEIL = "ConseilSuiviYAM@gmail.com"
+    mail_link = f"mailto:{EMAIL_CONSEIL}?subject={urllib.parse.quote('Demande de suivi')}&body={urllib.parse.quote('Bonjour...')}"
+    
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #111827, #1f2937); border-radius: 20px; padding: 35px; color: white; margin-top: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #374151;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 300px;">
+                <span style="background: #2E7D32; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Expertise Technique</span>
+                <h3 style="margin: 10px 0 6px 0; color: white; font-weight: 800; font-size: 24px;">Cellule Conseil & Suivi YAM</h3>
+                <p style="margin: 0; color: #9ca3af; font-size: 15px;">Besoin d'analyses de sol approfondies ou d'un suivi agronomique complet par nos ingénieurs ?</p>
+                <p style="margin: 5px 0 0 0; color: #34d399; font-weight: 600; font-size: 14px;">📧 Contact direct : {EMAIL_CONSEIL}</p>
+            </div>
+            <div style="min-width: 220px; text-align: right;"><a href="{mail_link}" style="text-decoration: none;"><button style="background: #2E7D32; color: white; border: none; padding: 14px 28px; font-size: 15px; font-weight: 700; border-radius: 12px; cursor: pointer; width: 100%;">🚀 Contacter la Cellule</button></a></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # =====================================================
-# RETRAIT DES ICÔNES POUR LA LOGIQUE DU CODE UNIFIÉ
+# SELECTION : REALISATIONS
 # =====================================================
-# Cette ligne nettoie la chaîne pour rester compatible avec vos 'if/elif' actuels
-selected = selected.split(" ")[1] 
+elif selected == "Réalisations":
+    st.markdown('<h1 class="hero-title">🌱 Nos Réalisations & Impacts</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="hero-subtitle">YouAgronoMe déploie des standards technologiques mondiaux pour catalyser l\'agriculture de demain.</p>', unsafe_allow_html=True)
+    st.markdown("""<div class="kpi-global-container"><div class="kpi-premium-box"><p class="kpi-premium-val">98%</p><p class="kpi-premium-lbl">Taux de Satisfaction Global</p></div></div>""", unsafe_allow_html=True)
+    st.markdown("<br><hr style='border: 0; height: 1px; background: #e0e0e0;'><br>", unsafe_allow_html=True)
+    st.markdown('<h2 class="section-headline">🗣️ Parole à l\'Écosystème</h2>', unsafe_allow_html=True)
 
-# Votre bloc de condition unifié prend la suite proprement :
-# if selected == "Conseils":
-#     ...
+    temoins = [
+        ("Awa Ndiaye", "Agricultrice", "Grâce aux débouchés de YouAgronoMe, mes produits frais trouvent preneur en un temps record."),
+        ("Aissatou Diallo", "Cliente Grand Compte", "Une régularité de qualité impressionnante et des grilles de prix très compétitives."),
+        ("Fatou Sow", "Commerçante", "Un service professionnel, rigoureux et surtout d'une fiabilité remarquable."),
+        ("Khady Diop", "Productrice Émérite", "L'interface simplifie absolument tout le parcours de vente.")
+    ]
+
+    cols = st.columns(2)
+    for i, (nom, role, texte) in enumerate(temoins):
+        initiale = nom[0] if nom else "U"
+        with cols[i % 2]:
+            st.markdown(f"""
+            <div class="testimonial-global-card">
+                <div class="client-profile-meta">
+                    <div class="client-avatar-placeholder">{initiale}</div>
+                    <div class="client-title-block"><span class="client-main-name">{nom}</span><span class="client-badge-role">{role}</span></div>
+                </div>
+                <blockquote class="testimonial-quote-text">"{texte}"</blockquote>
+            </div>
+            """, unsafe_allow_html=True)
+
+# =====================================================
+# SELECTION : CONTACT
+# =====================================================
+elif selected == "Contact":
+    st.markdown("""
+    <div style="text-align:center; margin-bottom: 40px;">
+        <h1 style="font-size: 42px; font-weight: 900; color: #1b5e20;">🤝 Contact</h1>
+        <p style="font-size: 18px; color: #4e5d4e;">Entrez en relation directe avec les équipes de YouAgronoMe</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("""<div class="contact-card"><div class="contact-title">📍 Informations Globales</div><div class="contact-text">📞 <b>Téléphone :</b> +221 33 969 48 83<br>📧 <b>Email :</b> isseyoume212@gmail.com<br>📍 <b>Siège :</b> Saint-Louis, Sénégal</div></div>""", unsafe_allow_html=True)
+    with c2:
+        st.markdown("""<div class="contact-card"><div class="contact-title">🏢 Nos Départements</div><div class="contact-text">🤝 <b>Pôle Partenariats :</b> Co-investissements & Projets<br>🎓 <b>Pôle Opérations :</b> Logistique & Suivi terrain<br>🚜 <b>Pôle Commercial :</b> Distribution & Offres de Gros</div></div>""", unsafe_allow_html=True)
+
+    st.markdown("<br><hr style='border: 0; height: 1px; background: #e0e0e0;'><br>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #2e7d32; font-weight: 800; margin-bottom: 15px;'>✉️ Formulaire de messagerie sécurisé</h3>", unsafe_allow_html=True)
+    
+    with st.form("contact", clear_on_submit=True):
+        nom = st.text_input("Votre Nom complet")
+        email = st.text_input("Votre Adresse Email")
+        msg = st.text_area("Votre Message ou projet")
+        ok = st.form_submit_button("🚀 Envoyer mon message")
+        if ok:
+            if nom and email and msg: st.success("Message envoyé avec succès ✔ Un conseiller prendra contact sous 24h.")
+            else: st.warning("Veuillez remplir l'ensemble des champs requis.")
 # Accueil=====================================================
 if selected == "Accueil":
 
