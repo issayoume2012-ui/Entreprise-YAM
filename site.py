@@ -94,29 +94,7 @@ selected = st.sidebar.radio(
         "Réalisations",
         "Contact"
     ]
-),
-
-        # Onglets inactifs
-        "nav-link": {
-            "color": "#444444",
-            "background-color": "transparent",
-        },
-        # Effet au survol (Hover)
-        "nav-link-hover": {
-            "background-color": "rgba(67, 160, 71, 0.1)",
-            "color": "#1B5E20",
-            "transform": "translateY(-3px)" 
-        },
-        # Onglet actif (Dégradé Eau & Plante)
-        "nav-link-selected": {
-            "background": "linear-gradient(135deg, #1B5E20, #0288D1)",
-            "color": "white",
-            "font-weight": "800",
-            "box-shadow": "0 10px 25px rgba(27, 94, 32, 0.25)"
-        }
-    }
 )
-
 # Accueil=====================================================
 if selected == "Accueil":
 
