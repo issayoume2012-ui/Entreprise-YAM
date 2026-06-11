@@ -84,17 +84,100 @@ div[data-testid="stMarkdownContainer"] > div {
 # MENU (REMPLACEMENT SANS DEPENDANCE EXTERNE)
 # =====================================================
 
+import streamlit as st
+
+# =====================================================
+# ENGINE STYLING SIDEBAR XXL PREMIUM (CSS ADVANCED)
+# =====================================================
+st.markdown("""
+<style>
+    /* Cibler la barre latérale globale */
+    [data-testid="stSidebar"] {
+        background-color: #f8faf8 !important;
+        padding-top: 20px;
+    }
+
+    /* Titre du menu de navigation */
+    [data-testid="stSidebar"] p {
+        font-size: 1.4rem !important;
+        font-weight: 800 !important;
+        color: #1b5e20 !important;
+        letter-spacing: 0.5px;
+        margin-bottom: 15px !important;
+    }
+
+    /* Conteneur des options Radio */
+    [data-testid="stSidebar"] .stRadio > div {
+        gap: 12px !important;
+    }
+
+    /* Redessiner chaque option de la liste pour en faire un bouton XXL */
+    [data-testid="stSidebar"] .stRadio label {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        padding: 16px 20px !important;
+        border-radius: 16px !important;
+        font-size: 1.2rem !important;  /* Taille XXL */
+        font-weight: 700 !important;
+        color: #37474f !important;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    /* Effet au survol (Hover) */
+    [data-testid="stSidebar"] .stRadio label:hover {
+        transform: translateX(5px);
+        border-color: #2e7d32 !important;
+        color: #2e7d32 !important;
+        box-shadow: 0 8px 15px rgba(46, 125, 50, 0.08) !important;
+    }
+
+    /* Style de l'option active (Sélectionnée) */
+    [data-testid="stSidebar"] .stRadio div[aria-checked="true"] label {
+        background: linear-gradient(135deg, #1b5e20, #2e7d32) !important;
+        color: #ffffff !important;
+        border-color: #1b5e20 !important;
+        box-shadow: 0 10px 20px rgba(27, 94, 32, 0.2) !important;
+    }
+
+    /* Masquer le petit cercle radio natif de Streamlit pour un rendu 100% bouton applicatif */
+    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] [data-testid="stWidgetMarkdownInsideLabel"]::before {
+        display: none !important;
+    }
+    [data-testid="stSidebar"] .stRadio input[type="radio"] {
+        display: none !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# =====================================================
+# NAVIGATION SIDERBAR XXL AVEC ICÔNES HARMONISÉES
+# =====================================================
 selected = st.sidebar.radio(
     "🌾 Navigation",
     [
-        "Accueil",
-        "Produits",
-        "Commande",
-        "Conseils",
-        "Réalisations",
-        "Contact"
+        "🏠 Accueil",
+        "📦 Produits",
+        "🛒 Commande",
+        "🌿 Conseils",
+        "📈 Réalisations",
+        "🤝 Contact"
     ]
 )
+
+# =====================================================
+# RETRAIT DES ICÔNES POUR LA LOGIQUE DU CODE UNIFIÉ
+# =====================================================
+# Cette ligne nettoie la chaîne pour rester compatible avec vos 'if/elif' actuels
+selected = selected.split(" ")[1] 
+
+# Votre bloc de condition unifié prend la suite proprement :
+# if selected == "Conseils":
+#     ...
 # Accueil=====================================================
 if selected == "Accueil":
 
