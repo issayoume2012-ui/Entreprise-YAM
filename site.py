@@ -1,7 +1,6 @@
 import streamlit as st
 import time
 import urllib.parse
-from streamlit_option_menu import option_menu
 
 # =====================================================
 # CONFIG
@@ -81,34 +80,22 @@ div[data-testid="stMarkdownContainer"] > div {
 # =====================================================
 # BANDE DE NAVIGATION HORIZONTALE XXL
 # =====================================================
-selected = option_menu(
-    menu_title=None,
-    options=[
+# =====================================================
+# MENU (REMPLACEMENT SANS DEPENDANCE EXTERNE)
+# =====================================================
+
+selected = st.sidebar.radio(
+    "🌾 Navigation",
+    [
         "Accueil",
         "Produits",
         "Commande",
         "Conseils",
         "Réalisations",
         "Contact"
-    ],
-    icons=[
-        "house-fill",
-        "basket-fill",
-        "cart-fill",
-        "book-fill",
-        "bar-chart-fill",
-        "people-fill",
-        "telephone-fill"
-    ],
-    orientation="horizontal", # Mode barre supérieure horizontale
-    styles={
-        "container": {
-            "padding": "12px !important", 
-            "background-color": "rgba(255, 255, 255, 0.95)",
-            "border-radius": "24px",
-            "box-shadow": "0 15px 35px rgba(0,0,0,0.06)",
-            "border": "1px solid rgba(0,0,0,0.03)"
-        },
+    ]
+),
+
         # Onglets inactifs
         "nav-link": {
             "color": "#444444",
