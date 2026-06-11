@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import urllib.parse
+from streamlit_option_menu import option_menu
 
 # =====================================================
 # CONFIG
@@ -80,299 +81,55 @@ div[data-testid="stMarkdownContainer"] > div {
 # =====================================================
 # BANDE DE NAVIGATION HORIZONTALE XXL
 # =====================================================
-# =====================================================
-# MENU (REMPLACEMENT SANS DEPENDANCE EXTERNE)
-# =====================================================
-
-import streamlit as st
-import urllib.parse
-
-# =====================================================
-# ENGINE STYLING SIDEBAR & COMPOSANTS XXL (CSS ADVANCED)
-# =====================================================
-st.markdown("""
-<style>
-    /* 1. FORCE L'OUVERTURE ET STYLISE LE BOUTON DE LA SIDEBAR FERMÉE */
-    div[data-testid="stSidebarCollapseButton"] button {
-        background-color: #1b5e20 !important;
-        color: white !important;
-        border-radius: 50% !important;
-        width: 60px !important;
-        height: 60px !important;
-        box-shadow: 0 4px 15px rgba(27, 94, 32, 0.4) !important;
-        transition: all 0.3s ease-in-out !important;
+selected = option_menu(
+    menu_title=None,
+    options=[
+        "Accueil",
+        "Produits",
+        "Commande",
+        "Conseils",
+        "Réalisations",
+        "Contact"
+    ],
+    icons=[
+        "house-fill",
+        "basket-fill",
+        "cart-fill",
+        "book-fill",
+        "bar-chart-fill",
+        "people-fill",
+        "telephone-fill"
+    ],
+    orientation="horizontal", # Mode barre supérieure horizontale
+    styles={
+        "container": {
+            "padding": "12px !important", 
+            "background-color": "rgba(255, 255, 255, 0.95)",
+            "border-radius": "24px",
+            "box-shadow": "0 15px 35px rgba(0,0,0,0.06)",
+            "border": "1px solid rgba(0,0,0,0.03)"
+        },
+        # Onglets inactifs
+        "nav-link": {
+            "color": "#444444",
+            "background-color": "transparent",
+        },
+        # Effet au survol (Hover)
+        "nav-link-hover": {
+            "background-color": "rgba(67, 160, 71, 0.1)",
+            "color": "#1B5E20",
+            "transform": "translateY(-3px)" 
+        },
+        # Onglet actif (Dégradé Eau & Plante)
+        "nav-link-selected": {
+            "background": "linear-gradient(135deg, #1B5E20, #0288D1)",
+            "color": "white",
+            "font-weight": "800",
+            "box-shadow": "0 10px 25px rgba(27, 94, 32, 0.25)"
+        }
     }
-    div[data-testid="stSidebarCollapseButton"] button:hover {
-        transform: scale(1.1) rotate(90deg);
-        background-color: #2e7d32 !important;
-    }
-    div[data-testid="stSidebarCollapseButton"] svg {
-        fill: #ffb300 !important;
-        transform: scale(1.5) !important;
-    }
+)
 
-    /* Configuration globale de la barre latérale */
-    [data-testid="stSidebar"] {
-        background-color: #f8faf8 !important;
-        padding-top: 15px;
-    }
-    
-    /* Transformation de l'Expander en un Bouton-Menu XXL */
-    [data-testid="stSidebar"] .stExpander {
-        background-color: #ffffff !important;
-        border: 2px solid #e2e8f0 !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
-        margin-bottom: 25px !important;
-        overflow: hidden;
-    }
-    
-    /* Style du bandeau cliquable du menu */
-    [data-testid="stSidebar"] .stExpander summary {
-        padding: 16px 20px !important;
-        background: linear-gradient(135deg, #1b5e20, #2e7d32) !important;
-        color: white !important;
-    }
-    
-    /* Style du texte à l'intérieur du bouton du menu */
-    [data-testid="stSidebar"] .stExpander summary span p {
-        font-size: 1.2rem !important;
-        font-weight: 800 !important;
-        color: white !important;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Flèche du menu déroulant */
-    [data-testid="stSidebar"] .stExpander summary svg {
-        fill: #ffb300 !important;
-        transform: scale(1.3);
-    }
-
-    /* Redessiner les options radio à l'intérieur du menu déroulant */
-    [data-testid="stSidebar"] .stRadio > div {
-        gap: 8px !important;
-        padding: 10px 0;
-    }
-
-    [data-testid="stSidebar"] .stRadio label {
-        background-color: #fafbfc !important;
-        border: 1px solid #e1e8ed !important;
-        padding: 14px 18px !important;
-        border-radius: 12px !important;
-        font-size: 1.1rem !important;
-        font-weight: 700 !important;
-        color: #37474f !important;
-        transition: all 0.25s ease !important;
-        cursor: pointer !important;
-        width: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-    }
-
-    /* Effet au survol des options du menu */
-    [data-testid="stSidebar"] .stRadio label:hover {
-        transform: translateX(4px);
-        border-color: #2e7d32 !important;
-        color: #2e7d32 !important;
-        background-color: #f1f8f2 !important;
-    }
-
-    /* Option active sélectionnée */
-    [data-testid="stSidebar"] .stRadio div[aria-checked="true"] label {
-        background: #e8f5e9 !important;
-        color: #1b5e20 !important;
-        border-color: #1b5e20 !important;
-        border-left: 5px solid #ffb300 !important;
-    }
-
-    /* Masquer les boutons radio ronds natifs de Streamlit */
-    [data-testid="stSidebar"] .stRadio div[role="radiogroup"] [data-testid="stWidgetMarkdownInsideLabel"]::before {
-        display: none !important;
-    }
-    [data-testid="stSidebar"] .stRadio input[type="radio"] {
-        display: none !important;
-    }
-
-    /* Styles pour les sections de contenu */
-    .conseil-hero { padding: 65px 40px; border-radius: 24px; text-align: center; color: white; background: linear-gradient(135deg, rgba(27, 94, 32, 0.9), rgba(1, 87, 155, 0.75)), url('https://images.unsplash.com/photo-1464226184884-fa280b87c399'); background-size: cover; background-position: center; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(27, 94, 32, 0.2); }
-    .conseil-hero h1 { font-size: 42px !important; font-weight: 900 !important; margin-bottom: 12px !important; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
-    .conseil-hero p { font-size: 18px !important; opacity: 0.95; max-width: 700px; margin: 0 auto !important; }
-    .conseil-card { background: rgba(255, 255, 255, 0.9); border: 1px solid #e2e8f0; padding: 30px 24px; border-radius: 20px; min-height: 310px; box-shadow: 0 6px 20px rgba(0,0,0,0.04); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; justify-content: flex-start; margin-bottom: 20px; }
-    .conseil-card:hover { transform: translateY(-8px); box-shadow: 0 20px 35px rgba(27, 94, 32, 0.12); border-color: #2E7D32; }
-    .conseil-icon { font-size: 55px; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
-    .conseil-title { color: #1A202C; font-size: 22px; font-weight: 800; margin: 0 0 15px 0; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; }
-    .conseil-item { font-size: 14px; color: #4A5568; margin: 8px 0 !important; display: flex; align-items: center; font-weight: 500; }
-    .quote-box { background: #f0f7f4; border-left: 5px solid #2E7D32; padding: 20px; border-radius: 4px 16px 16px 4px; margin: 30px 0; font-style: italic; }
-    .hero-title { font-size: 3.8rem !important; font-weight: 900 !important; color: #1b5e20; line-height: 1.1; margin-bottom: 20px; letter-spacing: -2px; }
-    .hero-subtitle { font-size: 1.4rem !important; color: #4e5d4e; max-width: 950px; line-height: 1.7; margin-bottom: 60px; }
-    .section-headline { font-size: 2.4rem !important; font-weight: 800 !important; color: #2e7d32; margin-top: 60px; margin-bottom: 40px; position: relative; padding-bottom: 15px; letter-spacing: -0.5px; }
-    .section-headline::after { content: ''; position: absolute; bottom: 0; left: 0; width: 80px; height: 5px; background-color: #ffb300; border-radius: 3px; }
-    .kpi-global-container { display: flex; justify-content: center; width: 100%; margin-bottom: 60px; }
-    .kpi-premium-box { width: 100%; max-width: 500px; background: linear-gradient(135deg, #ffffff, #f4f9f4); border: 1px solid #e0ebd3; border-radius: 24px; padding: 45px 30px; text-align: center; border-bottom: 8px solid #2e7d32; box-shadow: 0 20px 45px rgba(46, 125, 50, 0.06); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
-    .kpi-premium-box:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(46, 125, 50, 0.15); border-color: #ffb300; }
-    .kpi-premium-val { font-size: 5rem !important; font-weight: 950 !important; color: #1b5e20; margin: 0; line-height: 1; white-space: nowrap; letter-spacing: -2px; }
-    .kpi-premium-lbl { font-size: 1.1rem !important; font-weight: 800; color: #43a047; margin-top: 20px !important; text-transform: uppercase; letter-spacing: 2px; }
-    .testimonial-global-card { background: #ffffff; border: 1px solid #eaeaea; border-radius: 24px; padding: 40px; margin-bottom: 30px; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.03); position: relative; transition: all 0.3s ease; }
-    .testimonial-global-card:hover { box-shadow: 0 25px 50px rgba(46, 125, 50, 0.09); border-color: #2e7d32; }
-    .testimonial-global-card::before { content: "“"; position: absolute; top: -15px; right: 35px; font-size: 10rem; color: rgba(255, 179, 0, 0.14); font-family: "Georgia", serif; }
-    .client-profile-meta { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; }
-    .client-avatar-placeholder { width: 55px; height: 55px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1b5e20; font-weight: 800; font-size: 1.3rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
-    .client-title-block { display: flex; flex-direction: column; }
-    .client-main-name { font-size: 1.4rem !important; font-weight: 800; color: #1b5e
-# =====================================================
-if selected == "Accueil":
-    st.title("🏠 Accueil YouAgronoMe")
-    st.write("Bienvenue sur votre Hub d'agriculture connectée.")
-
-elif selected == "Produits":
-    st.title("📦 Nos Produits")
-    st.write("Découvrez notre catalogue de semences et d'intrants certifiés.")
-
-elif selected == "Commande":
-    st.title("🛒 Passer une Commande")
-    st.write("Interface de commande simplifiée.")
-
-# =====================================================
-# SELECTION : CONSEILS XXL 🌍
-# =====================================================
-elif selected == "Conseils":
-    st.markdown("""
-    <div class="conseil-hero">
-        <h1>🌾 Hub de Performance Agronomique</h1>
-        <p>Optimisez vos structures d'exploitation, accélérez vos rendements et basculez vers une agriculture de précision moderne.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # DATASET CONSEILS
-    conseils = [
-        ("💧", "Irrigation Intelligente", ["Arroser aux heures stratégiques", "Déployer le goutte-à-goutte", "Piloter via capteurs d'humidité", "Réduire le taux d'évaporation"], "**Focus Technique :** L'apport hydrique optimal se situe avant 7h ou après 18h. Le goutte-à-goutte permet d'économiser jusqu'à 45% de ressources en eau tout en ciblant directement l'appareil racinaire."),
-        ("🌱", "Fertilisation Équilibrée", ["Privilégier l'amendement organique", "Fractionner les apports nutritifs", "Analyser le profil de sol (N-P-K)", "Éviter la saturation chimique"], "**Focus Technique :** Le compost mûr améliore la structure globale du sol. Avant tout apport d'engrais, effectuez un test de pH pour maximiser l'assimilation des nutriments par la plante."),
-        ("🐛", "Protection Phytosanitaire", ["Mettre en place un diagnostic précoce", "Formuler des biopesticides locaux", "Appliquer la rotation des cultures", "Isoler immédiatement les foyers"], "**Focus Technique :** Utilisez des solutions à base de neem ou de piment pour repousser les nuisibles naturellement. Alterner les familles de cultures casse le cycle de reproduction des bio-agresseurs."),
-        ("🌾", "Conduite de Culture", ["Sélectionner des semences certifiées", "Respecter les densités de semis", "Exécuter des sarclages rigoureux", "Planifier les fenêtres de récolte"], "**Focus Technique :** Un espacement précis garantit à chaque plant un accès parfait à la lumière et aux nutriments. Le désherbage des 30 premiers jours est crucial pour éviter la concurrence."),
-        ("🌍", "Agroécologie & Durabilité", ["Régénérer le tissu microbien", "Pratiquer le paillage systématique", "Valoriser la biomasse résiduelle", "Soutenir les écosystèmes utiles"], "**Focus Technique :** Le paillage conserve l'humidité, empêche la pousse des herbes adventices et nourrit la faune du sol en se décomposant. C'est le pilier de l'agriculture de conservation."),
-        ("📈", "Business & Stratégie", ["Analyser les courbes des marchés", "Standardiser la qualité produit", "Créer des circuits courts de vente", "Intégrer les outils de suivi"], "**Focus Technique :** Suivez les fluctuations de prix sur les marchés locaux avant la récolte pour négocier efficacement. Le tri et le calibrage rigoureux augmentent la valeur perçue de 25%.")
-    ]
-
-    cols = st.columns(3)
-    for i, (icon, titre, points, detail) in enumerate(conseils):
-        with cols[i % 3]:
-            lignes_html = "".join([f'<div class="conseil-item">✅ {p}</div>' for p in points])
-            st.markdown(f"""
-            <div class="conseil-card">
-                <div class="conseil-icon">{icon}</div>
-                <h3 class="conseil-title">{titre}</h3>
-                <div>{lignes_html}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            with st.expander("🔍 Voir protocole complet"):
-                st.markdown(detail)
-
-    st.markdown("---")
-    c_gauche, c_droite = st.columns([5, 5])
-    
-    with c_gauche:
-        st.markdown("<h3 style='color: #1B5E20; margin-top:0;'>🎯 Recommandation Stratégique</h3>", unsafe_allow_html=True)
-        st.info("**Loi de l'optimum :** Pour maximiser vos rendements de manière exponentielle, n'isolez jamais vos actions. Le succès réside dans le triptyque : **Semence certifiée + Gestion hydrique localisée + Suivi nutritionnel organique rigoureux.**")
-        st.markdown("""<div class="quote-box">"Le sol n'est pas une simple surface de dépôt, c'est un organisme vivant qu'il faut nourrir pour qu'il nous nourrisse en retour."</div>""", unsafe_allow_html=True)
-
-    with c_droite:
-        st.markdown("<h3 style='color: #01579B; margin-top:0;'>🧮 Simulateur de Rendement & Irrigation Pro</h3>", unsafe_allow_html=True)
-        with st.container(border=True):
-            data_cultures = {
-                "Tomates 🍅": {"besoin_eau": 6, "rendement_m2": 4.5},
-                "Oignons 🧅": {"besoin_eau": 5, "rendement_m2": 3.8},
-                "Fraises 🍓": {"besoin_eau": 4, "rendement_m2": 2.5},
-                "Carottes 🥕": {"besoin_eau": 4.5, "rendement_m2": 4.0},
-                "Pommes de terre 🥔": {"besoin_eau": 5.5, "rendement_m2": 3.5},
-                "Riz / Maïs 🌾": {"besoin_eau": 8, "rendement_m2": 1.2}
-            }
-            culture_choisie = st.selectbox("Type de culture cible", list(data_cultures.keys()))
-            surface = st.number_input("Surface totale d'exploitation (en m²)", min_value=10, max_value=500000, value=500, step=50)
-            
-            besoin_eau_total = surface * data_cultures[culture_choisie]["besoin_eau"]
-            rendement_estime_kg = surface * data_cultures[culture_choisie]["rendement_m2"]
-            
-            m1, m2 = st.columns(2)
-            with m1: st.metric(label="Volume d'eau requis / jour", value=f"{besoin_eau_total:,} Litres", delta=f"{data_cultures[culture_choisie]['besoin_eau']} L / m²")
-            with m2: st.metric(label="Rendement moyen estimé", value=f"{rendement_estime_kg/1000:.2f} Tonnes" if rendimiento_estime_kg >= 1000 else f"{rendement_estime_kg:,} Kg", delta="Objectif optimal")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    EMAIL_CONSEIL = "ConseilSuiviYAM@gmail.com"
-    mail_link = f"mailto:{EMAIL_CONSEIL}?subject={urllib.parse.quote('Demande de suivi')}&body={urllib.parse.quote('Bonjour...')}"
-    
-    st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #111827, #1f2937); border-radius: 20px; padding: 35px; color: white; margin-top: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #374151;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
-            <div style="flex: 1; min-width: 300px;">
-                <span style="background: #2E7D32; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Expertise Technique</span>
-                <h3 style="margin: 10px 0 6px 0; color: white; font-weight: 800; font-size: 24px;">Cellule Conseil & Suivi YAM</h3>
-                <p style="margin: 0; color: #9ca3af; font-size: 15px;">Besoin d'analyses de sol approfondies ou d'un suivi agronomique complet par nos ingénieurs ?</p>
-                <p style="margin: 5px 0 0 0; color: #34d399; font-weight: 600; font-size: 14px;">📧 Contact direct : {EMAIL_CONSEIL}</p>
-            </div>
-            <div style="min-width: 220px; text-align: right;"><a href="{mail_link}" style="text-decoration: none;"><button style="background: #2E7D32; color: white; border: none; padding: 14px 28px; font-size: 15px; font-weight: 700; border-radius: 12px; cursor: pointer; width: 100%;">🚀 Contacter la Cellule</button></a></div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# =====================================================
-# SELECTION : REALISATIONS
-# =====================================================
-elif selected == "Réalisations":
-    st.markdown('<h1 class="hero-title">🌱 Nos Réalisations & Impacts</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="hero-subtitle">YouAgronoMe déploie des standards technologiques mondiaux pour catalyser l\'agriculture de demain.</p>', unsafe_allow_html=True)
-    st.markdown("""<div class="kpi-global-container"><div class="kpi-premium-box"><p class="kpi-premium-val">98%</p><p class="kpi-premium-lbl">Taux de Satisfaction Global</p></div></div>""", unsafe_allow_html=True)
-    st.markdown("<br><hr style='border: 0; height: 1px; background: #e0e0e0;'><br>", unsafe_allow_html=True)
-    st.markdown('<h2 class="section-headline">🗣️ Parole à l\'Écosystème</h2>', unsafe_allow_html=True)
-
-    temoins = [
-        ("Awa Ndiaye", "Agricultrice", "Grâce aux débouchés de YouAgronoMe, mes produits frais trouvent preneur en un temps record."),
-        ("Aissatou Diallo", "Cliente Grand Compte", "Une régularité de qualité impressionnante et des grilles de prix très compétitives."),
-        ("Fatou Sow", "Commerçante", "Un service professionnel, rigoureux et surtout d'une fiabilité remarquable."),
-        ("Khady Diop", "Productrice Émérite", "L'interface simplifie absolument tout le parcours de vente.")
-    ]
-
-    cols = st.columns(2)
-    for i, (nom, role, texte) in enumerate(temoins):
-        initiale = nom[0] if nom else "U"
-        with cols[i % 2]:
-            st.markdown(f"""
-            <div class="testimonial-global-card">
-                <div class="client-profile-meta">
-                    <div class="client-avatar-placeholder">{initiale}</div>
-                    <div class="client-title-block"><span class="client-main-name">{nom}</span><span class="client-badge-role">{role}</span></div>
-                </div>
-                <blockquote class="testimonial-quote-text">"{texte}"</blockquote>
-            </div>
-            """, unsafe_allow_html=True)
-
-# =====================================================
-# SELECTION : CONTACT
-# =====================================================
-elif selected == "Contact":
-    st.markdown("""
-    <div style="text-align:center; margin-bottom: 40px;">
-        <h1 style="font-size: 42px; font-weight: 900; color: #1b5e20;">🤝 Contact</h1>
-        <p style="font-size: 18px; color: #4e5d4e;">Entrez en relation directe avec les équipes de YouAgronoMe</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("""<div class="contact-card"><div class="contact-title">📍 Informations Globales</div><div class="contact-text">📞 <b>Téléphone :</b> +221 33 969 48 83<br>📧 <b>Email :</b> isseyoume212@gmail.com<br>📍 <b>Siège :</b> Saint-Louis, Sénégal</div></div>""", unsafe_allow_html=True)
-    with c2:
-        st.markdown("""<div class="contact-card"><div class="contact-title">🏢 Nos Départements</div><div class="contact-text">🤝 <b>Pôle Partenariats :</b> Co-investissements & Projets<br>🎓 <b>Pôle Opérations :</b> Logistique & Suivi terrain<br>🚜 <b>Pôle Commercial :</b> Distribution & Offres de Gros</div></div>""", unsafe_allow_html=True)
-
-    st.markdown("<br><hr style='border: 0; height: 1px; background: #e0e0e0;'><br>", unsafe_allow_html=True)
-    st.markdown("<h3 style='color: #2e7d32; font-weight: 800; margin-bottom: 15px;'>✉️ Formulaire de messagerie sécurisé</h3>", unsafe_allow_html=True)
-    
-    with st.form("contact", clear_on_submit=True):
-        nom = st.text_input("Votre Nom complet")
-        email = st.text_input("Votre Adresse Email")
-        msg = st.text_area("Votre Message ou projet")
-        ok = st.form_submit_button("🚀 Envoyer mon message")
-        if ok:
-            if nom and email and msg: st.success("Message envoyé avec succès ✔ Un conseiller prendra contact sous 24h.")
-            else: st.warning("Veuillez remplir l'ensemble des champs requis.")
 # Accueil=====================================================
 if selected == "Accueil":
 
@@ -738,126 +495,17 @@ if selected=="À propos":
     """, unsafe_allow_html=True)
 
 # =====================================================
-# PRODUITS
-# =====================================================
-# PRODUITS
-# =====================================================
 elif selected == "Produits":
-    
-    # Sécurité d'initialisation du panier (Format Liste)
+    # Initialisation du panier si non existant
     if "panier" not in st.session_state:
         st.session_state.panier = []
 
-    # =====================================================
-    # DESIGN MODERN E-COMMERCE (CSS)
-    # =====================================================
-    st.markdown("""
-    <style>
-    /* Alignement parfait des colonnes */
-    div[data-testid="stColumn"] > div {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
+    st.title("🌾 Notre Marché Agricole")
+    st.markdown("Parcourez nos produits frais et ajoutez-les à votre panier.")
     
-    /* Carte produit internationale */
-    .global-product-card {
-        background: #ffffff;
-        border: 1px solid #eaedf1;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        position: relative;
-        margin-bottom: 10px;
-    }
-    .global-product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 24px rgba(27, 94, 32, 0.1);
-        border-color: #2E7D32;
-    }
-    .global-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: linear-gradient(135deg, #1B5E20, #43A047);
-        color: white;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 4px 8px;
-        border-radius: 20px;
-        text-transform: uppercase;
-        z-index: 2;
-    }
-    .global-img-container {
-        width: 100%;
-        height: 150px;
-        overflow: hidden;
-        background-color: #f8f9fa;
-    }
-    .global-img-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.4s ease;
-    }
-    .global-product-card:hover .global-img-container img {
-        transform: scale(1.05);
-    }
-    .global-info {
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-    }
-    .global-name {
-        font-size: 16px;
-        font-weight: 700;
-        color: #1a202c;
-        margin: 0 0 4px 0;
-    }
-    .global-price {
-        font-size: 15px;
-        font-weight: 800;
-        color: #2E7D32;
-        margin: 0 0 8px 0;
-    }
-    
-    /* Formattage des inputs natifs à l'intérieur de la grille */
-    div[data-testid="stNumberInput"] label {
-        display: none !important;
-    }
-    
-    /* Bouton Ajouter premium */
-    div.stButton > button[key^="add_"] {
-        background: #f1f5f9 !important;
-        color: #1e293b !important;
-        border: 1px solid #cbd5e1 !important;
-        font-weight: 600 !important;
-        font-size: 13px !important;
-        padding: 6px 0px !important;
-        border-radius: 8px !important;
-        transition: all 0.2s ease !important;
-    }
-    div.stButton > button[key^="add_"]:hover {
-        background: linear-gradient(135deg, #1B5E20, #0288D1) !important;
-        color: white !important;
-        border: none !important;
-        box-shadow: 0 4px 12px rgba(27, 94, 32, 0.15);
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<h1 style='text-align: center; color: #1B5E20; font-weight: 800; margin-bottom: 30px;'>🌾 Notre Catalogue International</h1>", unsafe_allow_html=True)
-
-    # Indicateur rapide de Panier
-    total_art_courant = sum(item['quantite'] for item in st.session_state.panier)
-    if total_art_courant > 0:
-        st.markdown(f"<div style='background-color: #e0f2f1; padding: 12px; border-radius: 12px; border-left: 5px solid #004d40; margin-bottom: 25px; color: #004d40; font-weight: 600;'>🛒 Votre panier contient <b>{total_art_courant}</b> article(s). Cliquez sur l'onglet <b>Commande</b> en haut pour finaliser !</div>", unsafe_allow_html=True)
+    # Barre de recherche (Typique d'un site e-commerce)
+    recherche = st.text_input("🔍 Rechercher un produit...", "")
+    st.divider()
 
     produits = [
         ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
@@ -882,41 +530,63 @@ elif selected == "Produits":
         ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
     ]
 
-    cols = st.columns(5)
+    # Filtrer la liste en fonction de la recherche de l'utilisateur
+    produits_filtres = [p for p in produits if recherche.lower() in p[1].lower()]
 
-    for i, p in enumerate(produits):
-        image, nom, prix_texte = p
-        
-        with cols[i % 5]:
-            st.markdown(f"""
-            <div class="global-product-card">
-                <div class="global-badge">Premium</div>
-                <div class="global-img-container">
-                    <img src="{image}">
-                </div>
-                <div class="global-info">
-                    <h4 class="global-name">{nom}</h4>
-                    <p class="global-price">{prix_texte}</p>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+    if not produits_filtres:
+        st.warning("Aucun produit ne correspond à votre recherche.")
+    else:
+        # Utilisation de 4 colonnes pour un rendu "Grille E-commerce"
+        cols = st.columns(4)
+
+        for i, p in enumerate(produits_filtres):
+            image, nom, description_prix = p
             
-            qte = st.number_input("Qté", min_value=1, max_value=100, value=1, key=f"qte_{i}")
-            
-            if st.button("🛒 Ajouter", key=f"add_{i}", use_container_width=True):
-                st.session_state.panier.append({
-                    "produit": nom,
-                    "prix": prix_texte,
-                    "quantite": qte
-                })
-                st.toast(f"✅ {nom} (x{qte}) ajouté !", icon="🛒")
-                st.rerun()
-
-
-# =====================================================
-# COMMANDE ULTIME
-# =====================================================
+            with cols[i % 4]:
+                with st.container(border=True):
+                    # 1. L'image
+                    st.image(image, use_container_width=True)
+                    
+                    # 2. Le nom du produit
+                    st.subheader(nom)
+                    
+                    # 3. Le prix stylisé
+                    st.markdown(
+                        f"""
+                        <p style='color: #2e7d32; font-weight: bold; font-size: 1.1em; margin-bottom: 5px;'>
+                            {description_prix}
+                        </p>
+                        """, 
+                        unsafe_allow_html=True
+                    )
+                    
+                    # 4. Sélecteur de quantité
+                    qte_ajout = st.number_input("Quantité", min_value=1, max_value=50, value=1, key=f"qte_{nom}_{i}")
+                    
+                    # 5. Bouton d'ajout au panier
+                    if st.button("🛒 Ajouter", key=f"btn_{nom}_{i}", type="primary", use_container_width=True):
+                        # Vérification si le produit existe déjà pour combiner les quantités
+                        deja_au_panier = False
+                        for item in st.session_state.panier:
+                            if item["produit"] == nom:
+                                item["quantite"] += qte_ajout
+                                deja_au_panier = True
+                                break
+                        
+                        if not deja_au_panier:
+                            st.session_state.panier.append({
+                                "produit": nom,
+                                "prix": description_prix,
+                                "quantite": qte_ajout
+                            })
+                        
+                        st.toast(f"✅ {qte_ajout}x {nom} ajouté(s) au panier !")
 elif selected == "Commande":
+    # Sécurisation des clés globales nécessaires
+    if "panier" not in st.session_state:
+        st.session_state.panier = []
+    if "historique" not in st.session_state:
+        st.session_state.historique = []
 
     st.markdown("<h1 style='text-align: center; color: #1B5E20; font-weight: 800;'>📦 Votre E-Panier & Facturation</h1>", unsafe_allow_html=True)
 
@@ -932,100 +602,97 @@ elif selected == "Commande":
         st.markdown("""
         <div style="text-align: center; padding: 40px; background: #fffcf5; border: 1px dashed #ffe0b2; border-radius: 16px; margin: 20px 0;">
             <h2 style="color: #e65100; margin: 0 0 10px 0;">🛒 Votre panier est vide</h2>
-            <p style="color: #666; margin: 0;">Explorez notre catalogue et ajoutez des produits frais en quelques clics.</p>
+            <p style="color: #666; margin: 0;">Explorez l'onglet <b>Produits</b> pour composer votre panier en quelques clics.</p>
         </div>
         """, unsafe_allow_html=True)
-        st.stop()
+    else:
+        # ==========================
+        # APERCU PANIER PREMIUM
+        # ==========================
+        st.markdown("<h3 style='color: #2E7D32; margin-bottom: 15px;'>🛒 Vérification des articles</h3>", unsafe_allow_html=True)
 
-    # ==========================
-    # APERCU PANIER PREMIUM
-    # ==========================
-    st.markdown("<h3 style='color: #2E7D32; margin-bottom: 15px;'>🛒 Vérification des articles</h3>", unsafe_allow_html=True)
+        total_articles = 0
+        total_financier = 0
 
-    total_articles = 0
-    total_financier = 0
+        for i, item in enumerate(panier):
+            # EXTRACTION SÉCURISÉE DU PRIX AVANT "FCFA"
+            try:
+                partie_prix = item["prix"].split("FCFA")[0]
+                prix_numerique = int(''.join(filter(str.isdigit, partie_prix)))
+            except:
+                prix_numerique = 0
+                
+            sous_total = prix_numerique * item["quantite"]
+            total_financier += sous_total
+            total_articles += item["quantite"]
 
-    for i, item in enumerate(panier):
-        # EXTRACTION SÉCURISÉE DU PRIX AVANT "FCFA"
-        try:
-            # On isole la partie avant 'FCFA' et on ne garde que les chiffres de cette partie
-            partie_prix = item["prix"].split("FCFA")[0]
-            prix_numerique = int(''.join(filter(str.isdigit, partie_prix)))
-        except:
-            prix_numerique = 0
-            
-        sous_total = prix_numerique * item["quantite"]
-        total_financier += sous_total
-        total_articles += item["quantite"]
+            # Design de ligne de panier épurée style multinationale
+            with st.container():
+                c1, c2, c3, c4 = st.columns([4, 2, 3, 1])
+                with c1:
+                    st.markdown(f"<p style='font-size: 16px; font-weight: 600; margin:0;'>🍏 {item['produit']}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='font-size: 12px; color: #718096; margin:0;'>{item['prix']}</p>", unsafe_allow_html=True)
+                with c2:
+                    st.markdown(f"<p style='font-size: 16px; margin:0; text-align: center;'><b>{item['quantite']}</b> unitaire(s)</p>", unsafe_allow_html=True)
+                with c3:
+                    st.markdown(f"<p style='font-size: 16px; font-weight: 700; color:#2E7D32; margin:0;'>{sous_total:,} FCFA</p>", unsafe_allow_html=True)
+                with c4:
+                    if st.button("❌", key=f"supprimer_{i}"):
+                        panier.pop(i)
+                        st.rerun()
+                st.markdown("<hr style='margin: 8px 0; border: 0.5px solid #edf2f7;'>", unsafe_allow_html=True)
 
-        # Design de ligne de panier épurée style multinationale
-        with st.container():
-            c1, c2, c3, c4 = st.columns([4, 2, 3, 1])
-            with c1:
-                st.markdown(f"<p style='font-size: 16px; font-weight: 600; margin:0;'>🍏 {item['produit']}</p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 12px; color: #718096; margin:0;'>{item['prix']}</p>", unsafe_allow_html=True)
-            with c2:
-                st.markdown(f"<p style='font-size: 16px; margin:0; text-align: center;'><b>{item['quantite']}</b> unitaire(s)</p>", unsafe_allow_html=True)
-            with c3:
-                st.markdown(f"<p style='font-size: 16px; font-weight: 700; color:#2E7D32; margin:0;'>{sous_total:,} FCFA</p>", unsafe_allow_html=True)
-            with c4:
-                if st.button("❌", key=f"supprimer_{i}"):
-                    panier.pop(i)
-                    st.rerun()
-            st.markdown("<hr style='margin: 8px 0; border: 0.5px solid #edf2f7;'>", unsafe_allow_html=True)
+        # Résumé monétaire global
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #f8f9fa, #e8f5e9); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 6px solid #2E7D32;">
+            <h4 style="margin: 0; color: #4a5568;">Total global ({total_articles} articles)</h4>
+            <h2 style="margin: 5px 0 0 0; color: #1B5E20; font-weight: 800;">{total_financier:,} FCFA</h2>
+            <p style="margin: 0; font-size: 12px; color: #718096;">* Hors frais de livraison / transport</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Résumé monétaire global
-    st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #f8f9fa, #e8f5e9); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 6px solid #2E7D32;">
-        <h4 style="margin: 0; color: #4a5568;">Total global ({total_articles} articles)</h4>
-        <h2 style="margin: 5px 0 0 0; color: #1B5E20; font-weight: 800;">{total_financier:,} FCFA</h2>
-        <p style="margin: 0; font-size: 12px; color: #718096;">* Hors frais de livraison / transport</p>
-    </div>
-    """, unsafe_allow_html=True)
+        # ==========================
+        # INFOS CLIENT PRO
+        # ==========================
+        st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>👤 Coordonnées & Livraison</h3>", unsafe_allow_html=True)
 
-    # ==========================
-    # INFOS CLIENT PRO
-    # ==========================
-    st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>👤 Coordonnées & Livraison</h3>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            nom = st.text_input("Nom complet *", placeholder="Ex: Issa Youme")
+            telephone = st.text_input("Téléphone *", placeholder="Ex: 777473170")
+            adresse = st.text_input("Adresse de livraison exacte *", placeholder="Quartier, Rue, Ville...")
+        with col2:
+            paiement = st.selectbox("Méthode de paiement", ["Présentiel", "Wave", "Orange Money"])
+            commentaire = st.text_area("Instructions spéciales", placeholder="Ex: Entrée en face de la mosquée, livrer avant midi...")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        nom = st.text_input("Nom complet *", placeholder="Ex: Issa Youme")
-        telephone = st.text_input("Téléphone *", placeholder="Ex: 777473170")
-        adresse = st.text_input("Adresse de livraison exact *", placeholder="Quartier, Rue, Ville...")
-    with col2:
-        paiement = st.selectbox("Méthode de paiement", ["Présentiel", "Wave", "Orange Money"])
-        commentaire = st.text_area("Instructions spéciales", placeholder="Ex: Entrée en face de la mosquée, livrer avant midi...")
+        if paiement in ["Wave", "Orange Money"]:
+            st.warning(f"💳 Service de transfert mobile actif : Merci d'effectuer le paiement au **+221 77 747 31 70** après envoi du formulaire.")
 
-    if paiement in ["Wave", "Orange Money"]:
-        st.warning(f"💳 Service de transfert mobile actif : Merci d'effectuer le paiement au **+221 77 747 31 70** après envoi du formulaire.")
-
-    # ==========================
-    # RESUME DISCRET
-    # ==========================
-    with st.expander("📄 Bordereau numérique de commande", expanded=False):
-        for p in panier:
-            st.write(f"• {p['produit']} x{p['quantite']} — ({p['prix']})")
-
-    # ==========================
-    # GENERATION & TRANSFERT DE LA COMMANDE
-    # ==========================
-    if st.button("🚀 Soumettre ma commande globale", use_container_width=True, type="primary"):
-        if not nom:
-            st.error("⚠️ Le champ 'Nom complet' est requis pour valider le bordereau.")
-        elif not telephone:
-            st.error("⚠️ Le numéro de 'Téléphone' est indispensable pour la livraison.")
-        elif not adresse:
-            st.error("⚠️ L'adresse de livraison est requise.")
-        else:
-            import urllib.parse
-            
-            texte_produits = ""
+        # ==========================
+        # RESUME DISCRET
+        # ==========================
+        with st.expander("📄 Bordereau numérique de commande", expanded=False):
             for p in panier:
-                texte_produits += f"• {p['produit']} x {p['quantite']} ({p['prix']})\n"
+                st.write(f"• {p['produit']} x{p['quantite']} — ({p['prix']})")
 
-            # Message structuré international
-            message = f"""🌾 NOUVELLE COMMANDE - YOUAGRONOME
+        # ==========================
+        # GENERATION & TRANSFERT DE LA COMMANDE
+        # ==========================
+        if st.button("🚀 Soumettre ma commande globale", use_container_width=True, type="primary"):
+            if not nom:
+                st.error("⚠️ Le champ 'Nom complet' est requis pour valider le bordereau.")
+            elif not telephone:
+                st.error("⚠️ Le numéro de 'Téléphone' est indispensable pour la livraison.")
+            elif not adresse:
+                st.error("⚠️ L'adresse de livraison est requise.")
+            else:
+                import urllib.parse
+                
+                texte_produits = ""
+                for p in panier:
+                    texte_produits += f"• {p['produit']} x {p['quantite']} ({p['prix']})\n"
+
+                message = f"""🌾 NOUVELLE COMMANDE - YOUAGRONOME
 
 👤 CLIENT :
 • Nom : {nom}
@@ -1041,36 +708,34 @@ elif selected == "Commande":
 • Note : {commentaire if commentaire else 'Aucune description'}
 """
 
-            whatsapp_link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + urllib.parse.quote(message)
-            email_link = f"mailto:{EMAIL_DEST}?subject=Commande Pro YouAgronoMe&body=" + urllib.parse.quote(message)
+                whatsapp_link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + urllib.parse.quote(message)
+                email_link = f"mailto:{EMAIL_DEST}?subject=Commande Pro YouAgronoMe&body=" + urllib.parse.quote(message)
 
-            # Enregistrement dans l'historique
-            st.session_state.historique.append({
-                "client": nom,
-                "paiement": paiement,
-                "total": f"{total_financier:,} FCFA",
-                "commande": panier.copy()
-            })
+                # Enregistrement dans l'historique
+                st.session_state.historique.append({
+                    "client": nom,
+                    "paiement": paiement,
+                    "total": f"{total_financier:,} FCFA",
+                    "commande": panier.copy()
+                })
 
-            st.success("🎉 Votre bon de commande international a été généré avec succès !")
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                st.link_button("📱 Finaliser sur WhatsApp", whatsapp_link, use_container_width=True)
-            with c2:
-                st.link_button("📧 Archiver par Email", email_link, use_container_width=True)
+                st.success("🎉 Votre bon de commande international a été généré avec succès !")
+                
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.link_button("📱 Finaliser sur WhatsApp", whatsapp_link, use_container_width=True)
+                with c2:
+                    st.link_button("📧 Archiver par Email", email_link, use_container_width=True)
 
-    # ==========================
-    # ACTIONS ANCHOR & HISTORIQUE
-    # ==========================
-    st.markdown("<br><hr>", unsafe_allow_html=True)
-    a1, a2 = st.columns([2, 2])
-    with a1:
+        # ==========================
+        # ACTIONS PANIER
+        # ==========================
+        st.markdown("<br><hr>", unsafe_allow_html=True)
         if st.button("🧹 Vider entièrement le panier", use_container_width=True):
             st.session_state.panier = []
             st.rerun()
 
-    # Section Historique Pro
+    # Section Historique Pro (Reste visible en permanence)
     st.markdown("<h3 style='color: #4a5568; margin-top: 40px;'>📜 Vos Transactions Récentes</h3>", unsafe_allow_html=True)
     historique = st.session_state.historique
 
@@ -1083,9 +748,6 @@ elif selected == "Commande":
                 st.markdown(f"**Mode de Règlement :** `{cmd['paiement']}`")
                 for p in cmd["commande"]:
                     st.write(f"• {p['produit']} (x{p['quantite']})")
-
-# =====================================================
-# =====================================================
 # CONSEILS XXL 🌍
 # =====================================================
 elif selected == "Conseils":
