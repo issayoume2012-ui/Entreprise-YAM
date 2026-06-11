@@ -92,6 +92,25 @@ import urllib.parse
 # =====================================================
 st.markdown("""
 <style>
+    /* 1. FORCE L'OUVERTURE ET STYLISE LE BOUTON DE LA SIDEBAR FERMÉE */
+    div[data-testid="stSidebarCollapseButton"] button {
+        background-color: #1b5e20 !important;
+        color: white !important;
+        border-radius: 50% !important;
+        width: 60px !important;
+        height: 60px !important;
+        box-shadow: 0 4px 15px rgba(27, 94, 32, 0.4) !important;
+        transition: all 0.3s ease-in-out !important;
+    }
+    div[data-testid="stSidebarCollapseButton"] button:hover {
+        transform: scale(1.1) rotate(90deg);
+        background-color: #2e7d32 !important;
+    }
+    div[data-testid="stSidebarCollapseButton"] svg {
+        fill: #ffb300 !important;
+        transform: scale(1.5) !important;
+    }
+
     /* Configuration globale de la barre latérale */
     [data-testid="stSidebar"] {
         background-color: #f8faf8 !important;
@@ -174,7 +193,7 @@ st.markdown("""
         display: none !important;
     }
 
-    /* Styles pour les sections de contenu (Conseils, Réalisations, etc.) */
+    /* Styles pour les sections de contenu */
     .conseil-hero { padding: 65px 40px; border-radius: 24px; text-align: center; color: white; background: linear-gradient(135deg, rgba(27, 94, 32, 0.9), rgba(1, 87, 155, 0.75)), url('https://images.unsplash.com/photo-1464226184884-fa280b87c399'); background-size: cover; background-position: center; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(27, 94, 32, 0.2); }
     .conseil-hero h1 { font-size: 42px !important; font-weight: 900 !important; margin-bottom: 12px !important; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
     .conseil-hero p { font-size: 18px !important; opacity: 0.95; max-width: 700px; margin: 0 auto !important; }
@@ -199,43 +218,7 @@ st.markdown("""
     .client-profile-meta { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; }
     .client-avatar-placeholder { width: 55px; height: 55px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1b5e20; font-weight: 800; font-size: 1.3rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
     .client-title-block { display: flex; flex-direction: column; }
-    .client-main-name { font-size: 1.4rem !important; font-weight: 800; color: #1b5e20; margin: 0; }
-    .client-badge-role { align-self: flex-start; font-size: 0.8rem !important; font-weight: 700; color: #c48b00; background: #fff8e1; padding: 4px 14px; border-radius: 30px; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
-    .testimonial-quote-text { font-size: 1.15rem !important; color: #37474f; line-height: 1.7; font-style: italic; background: #fbfcfd; padding: 22px; border-left: 5px solid #ffb300; border-radius: 0 20px 20px 0; margin: 0; }
-    .contact-card { background: #ffffff; padding: 30px 24px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 6px 20px rgba(0,0,0,0.04); min-height: 180px; transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
-    .contact-card:hover { transform: translateY(-5px); border-color: #2e7d32; box-shadow: 0 15px 30px rgba(46, 125, 50, 0.08); }
-    .contact-title { color: #2e7d32; font-size: 20px; font-weight: 800; margin-bottom: 15px; border-bottom: 2px solid #e8f5e9; padding-bottom: 6px; }
-    .contact-text { font-size: 15px; color: #4a5568; line-height: 1.8; font-weight: 500; }
-</style>
-""", unsafe_allow_html=True)
-
-# =====================================================
-# SIDEBAR NAVIGATION : BOUTON MENU EXPANDER XXL
-# =====================================================
-with st.sidebar:
-    st.markdown("<h2 style='color:#1b5e20; font-weight:900; font-size:24px; margin-bottom:25px; text-align:center; letter-spacing:-0.5px;'>🌾 YouAgronoMe</h2>", unsafe_allow_html=True)
-    
-    # L'expander devient l'enveloppe du bouton menu principal
-    with st.expander("📂 Menu principal", expanded=True):
-        selected_raw = st.radio(
-            "Sélectionnez votre vue :", # Label masqué visuellement par le CSS, requis par Streamlit
-            [
-                "🏠 Accueil", 
-                "📦 Produits", 
-                "🛒 Commande", 
-                "🌿 Conseils", 
-                "📈 Réalisations", 
-                "🤝 Contact"
-            ],
-            index=3, # Se positionne par défaut sur "Conseils"
-            label_visibility="collapsed" # Masque le libellé pour garder un rendu ultra-pro
-        )
-
-    # Nettoyage de la chaîne (retrait de l'émoji) pour garantir la compatibilité logique
-    selected = selected_raw.split(" ")[1]
-
-# =====================================================
-# BLOC DE LOGIQUE DE NAVIGATION INTERNE
+    .client-main-name { font-size: 1.4rem !important; font-weight: 800; color: #1b5e
 # =====================================================
 if selected == "Accueil":
     st.title("🏠 Accueil YouAgronoMe")
