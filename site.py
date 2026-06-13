@@ -1,7 +1,7 @@
-import streamlit as st
+
+# CONSEILimport streamlit as st
 import time
 import urllib.parse
-from streamlit_option_menu import option_menu
 
 # =====================================================
 # CONFIG
@@ -26,9 +26,8 @@ if "historique" not in st.session_state:
 with st.spinner("Chargement..."):
     time.sleep(1)
 
-# Menu =====================================================
 # =====================================================
-# INJECTION CSS POUR LA BANDE DE NAVIGATION BANNER XXL
+# INJECTION CSS POUR LA BANDE DE NAVIGATION BANNER XXL (RADIO CUSTOM)
 # =====================================================
 st.markdown("""
 <style>
@@ -41,13 +40,34 @@ st.markdown("""
     max-width: 95% !important;
 }
 
-/* 2. Customisation XXL du conteneur global du menu horizontal */
-div[data-testid="stMarkdownContainer"] > div {
-    border-radius: 20px;
+/* 2. Transformation XXL du st.radio en barre de navigation horizontale premium */
+div[data-testid="stRadio"] {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 12px !important;
+    border-radius: 24px !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.06) !important;
+    border: 1px solid rgba(0,0,0,0.03) !important;
+    margin-bottom: 30px !important;
 }
 
-/* 3. Style XXL pour les boutons de navigation horizontaux */
-.nav-link {
+/* Cacher le label obligatoire de Streamlit pour le menu */
+div[data-testid="stRadio"] > label {
+    display: none !important;
+}
+
+/* Aligner les options horizontalement de manière équitable */
+div[data-testid="stRadio"] > div[role="radiogroup"] {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-around !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+}
+
+/* Style XXL pour chaque option du menu (Label de la radio) */
+div[data-testid="stRadio"] > div[role="radiogroup"] > label {
+    flex: 1 !important;
+    min-width: 140px !important;
     font-size: 20px !important; /* Texte XXL */
     font-weight: 700 !important;
     padding: 20px 15px !important; /* Boutons hauts et larges */
@@ -55,82 +75,68 @@ div[data-testid="stMarkdownContainer"] > div {
     border-radius: 16px !important;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
     text-align: center !important;
+    background-color: transparent !important;
+    color: #444444 !important;
+    cursor: pointer !important;
+    border: none !important;
+    display: block !important;
 }
 
-/* Ajustement des icônes XXL */
-.nav-link i {
-    font-size: 22px !important; 
-    margin-bottom: 5px !important;
-    display: block !important; /* Icône au-dessus du texte */
+/* Cacher le petit cercle radio d'origine de Streamlit */
+div[data-testid="stRadio"] > div[role="radiogroup"] > label > div:first-child {
+    display: none !important;
+}
+
+/* Effet au survol (Hover) */
+div[data-testid="stRadio"] > div[role="radiogroup"] > label:hover {
+    background-color: rgba(67, 160, 71, 0.1) !important;
+    color: #1B5E20 !important;
+    transform: translateY(-3px) !important;
+}
+
+/* Style de l'onglet actif / sélectionné (Dégradé Eau & Plante XXL) */
+div[data-testid="stRadio"] > div[role="radiogroup"] > label[data-checked="true"] {
+    background: linear-gradient(135deg, #1B5E20, #0288D1) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    box-shadow: 0 10px 25px rgba(27, 94, 32, 0.25) !important;
 }
 
 /* Ajustement pour les petits écrans (Tablettes / Mobiles) */
 @media (max-width: 992px) {
-    .nav-link {
+    div[data-testid="stRadio"] > div[role="radiogroup"] > label {
         font-size: 15px !important;
         padding: 12px 5px !important;
-    }
-    .nav-link i {
-        font-size: 18px !important;
     }
 }
 </style>
 """, unsafe_allow_html=True)
 
+# =====================================================
+# SELECTION DU MENU VIA ST.RADIO (EN REMPLACEMENT DE OPTION_MENU)
+# =====================================================
+options_menu = [
+    "🏠 Accueil", 
+    "🛒 Produits", 
+    "📦 Commande", 
+    "💡 Conseils", 
+    "📊 Réalisations", 
+    "📞 Contact"
+]
 
-# =====================================================
-# BANDE DE NAVIGATION HORIZONTALE XXL
-# =====================================================
-selected = option_menu(
-    menu_title=None,
-    options=[
-        "Accueil",
-        "Produits",
-        "Commande",
-        "Conseils",
-        "Réalisations",
-        "Contact"
-    ],
-    icons=[
-        "house-fill",
-        "basket-fill",
-        "cart-fill",
-        "book-fill",
-        "bar-chart-fill",
-        "people-fill",
-        "telephone-fill"
-    ],
-    orientation="horizontal", # Mode barre supérieure horizontale
-    styles={
-        "container": {
-            "padding": "12px !important", 
-            "background-color": "rgba(255, 255, 255, 0.95)",
-            "border-radius": "24px",
-            "box-shadow": "0 15px 35px rgba(0,0,0,0.06)",
-            "border": "1px solid rgba(0,0,0,0.03)"
-        },
-        # Onglets inactifs
-        "nav-link": {
-            "color": "#444444",
-            "background-color": "transparent",
-        },
-        # Effet au survol (Hover)
-        "nav-link-hover": {
-            "background-color": "rgba(67, 160, 71, 0.1)",
-            "color": "#1B5E20",
-            "transform": "translateY(-3px)" 
-        },
-        # Onglet actif (Dégradé Eau & Plante)
-        "nav-link-selected": {
-            "background": "linear-gradient(135deg, #1B5E20, #0288D1)",
-            "color": "white",
-            "font-weight": "800",
-            "box-shadow": "0 10px 25px rgba(27, 94, 32, 0.25)"
-        }
-    }
+# Le st.radio utilise le CSS ci-dessus pour se transformer en barre horizontale haut de gamme
+selected_raw = st.radio(
+    "Navigation Menu",
+    options=options_menu,
+    horizontal=True
 )
 
-# Accueil=====================================================
+# Nettoyage de la chaîne pour la correspondance des conditions du code original
+selected = selected_raw.split(" ")[1]
+
+# =====================================================
+# ACCUEIL
+# =====================================================
 if selected == "Accueil":
 
     st.markdown("""
@@ -409,7 +415,6 @@ if selected == "Accueil":
         </div>
         """, unsafe_allow_html=True)
 
-
     # SERVICES
     st.markdown("<div class='section-title'>🚀 Nos Services</div>", unsafe_allow_html=True)
 
@@ -452,7 +457,6 @@ if selected == "Accueil":
         </div>
         """, unsafe_allow_html=True)
 
-
     # DOMAINES D'INTERVENTION REFAITS (BADGES INTERACTIFS ET ANIMÉS)
     st.markdown("<div class='section-title'>🌾 Domaines d'Intervention</div>", unsafe_allow_html=True)
 
@@ -476,34 +480,12 @@ if selected == "Accueil":
 
     st.write("") 
     st.success("🌱 Ensemble, valorisons notre sol et notre eau grâce à l'innovation !")
-# =====================================================
-
-if selected=="À propos":
-
-    st.markdown("""
-
-    <div class='card'>
-
-    YouAgronoMe accompagne le développement
-    d’une agriculture moderne, durable
-    et performante à Saint-Louis.
-
-    Créée en 2024.
-
-    </div>
-
-    """, unsafe_allow_html=True)
 
 # =====================================================
 elif selected == "Produits":
-    # Initialisation du panier si non existant
-    if "panier" not in st.session_state:
-        st.session_state.panier = []
-
     st.title("🌾 Notre Marché Agricole")
     st.markdown("Parcourez nos produits frais et ajoutez-les à votre panier.")
     
-    # Barre de recherche (Typique d'un site e-commerce)
     recherche = st.text_input("🔍 Rechercher un produit...", "")
     st.divider()
 
@@ -530,42 +512,28 @@ elif selected == "Produits":
         ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
     ]
 
-    # Filtrer la liste en fonction de la recherche de l'utilisateur
     produits_filtres = [p for p in produits if recherche.lower() in p[1].lower()]
 
     if not produits_filtres:
         st.warning("Aucun produit ne correspond à votre recherche.")
     else:
-        # Utilisation de 4 colonnes pour un rendu "Grille E-commerce"
         cols = st.columns(4)
-
         for i, p in enumerate(produits_filtres):
             image, nom, description_prix = p
             
             with cols[i % 4]:
                 with st.container(border=True):
-                    # 1. L'image
-                    st.image(image, use_container_width=True)
-                    
-                    # 2. Le nom du produit
+                    try:
+                        st.image(image, use_container_width=True)
+                    except:
+                        st.info(f"📸 Image de {nom}")
+                        
                     st.subheader(nom)
+                    st.markdown(f"<p style='color: #2e7d32; font-weight: bold; font-size: 1.1em; margin-bottom: 5px;'>{description_prix}</p>", unsafe_allow_html=True)
                     
-                    # 3. Le prix stylisé
-                    st.markdown(
-                        f"""
-                        <p style='color: #2e7d32; font-weight: bold; font-size: 1.1em; margin-bottom: 5px;'>
-                            {description_prix}
-                        </p>
-                        """, 
-                        unsafe_allow_html=True
-                    )
-                    
-                    # 4. Sélecteur de quantité
                     qte_ajout = st.number_input("Quantité", min_value=1, max_value=50, value=1, key=f"qte_{nom}_{i}")
                     
-                    # 5. Bouton d'ajout au panier
                     if st.button("🛒 Ajouter", key=f"btn_{nom}_{i}", type="primary", use_container_width=True):
-                        # Vérification si le produit existe déjà pour combiner les quantités
                         deja_au_panier = False
                         for item in st.session_state.panier:
                             if item["produit"] == nom:
@@ -579,25 +547,16 @@ elif selected == "Produits":
                                 "prix": description_prix,
                                 "quantite": qte_ajout
                             })
-                        
                         st.toast(f"✅ {qte_ajout}x {nom} ajouté(s) au panier !")
-elif selected == "Commande":
-    # Sécurisation des clés globales nécessaires
-    if "panier" not in st.session_state:
-        st.session_state.panier = []
-    if "historique" not in st.session_state:
-        st.session_state.historique = []
 
+# =====================================================
+elif selected == "Commande":
     st.markdown("<h1 style='text-align: center; color: #1B5E20; font-weight: 800;'>📦 Votre E-Panier & Facturation</h1>", unsafe_allow_html=True)
 
     NUMERO_WHATSAPP = "221777473170"
     EMAIL_DEST = "issayoume2012@gmail.com"
-
     panier = st.session_state.panier
 
-    # ==========================
-    # PANIER VIDE
-    # ==========================
     if not panier:
         st.markdown("""
         <div style="text-align: center; padding: 40px; background: #fffcf5; border: 1px dashed #ffe0b2; border-radius: 16px; margin: 20px 0;">
@@ -606,16 +565,13 @@ elif selected == "Commande":
         </div>
         """, unsafe_allow_html=True)
     else:
-        # ==========================
-        # APERCU PANIER PREMIUM
-        # ==========================
         st.markdown("<h3 style='color: #2E7D32; margin-bottom: 15px;'>🛒 Vérification des articles</h3>", unsafe_allow_html=True)
 
         total_articles = 0
         total_financier = 0
 
-        for i, item in enumerate(panier):
-            # EXTRACTION SÉCURISÉE DU PRIX AVANT "FCFA"
+        # On utilise une boucle standard pour éviter les problèmes d'index avec pop()
+        for i, item in enumerate(list(panier)):
             try:
                 partie_prix = item["prix"].split("FCFA")[0]
                 prix_numerique = int(''.join(filter(str.isdigit, partie_prix)))
@@ -626,7 +582,6 @@ elif selected == "Commande":
             total_financier += sous_total
             total_articles += item["quantite"]
 
-            # Design de ligne de panier épurée style multinationale
             with st.container():
                 c1, c2, c3, c4 = st.columns([4, 2, 3, 1])
                 with c1:
@@ -638,11 +593,10 @@ elif selected == "Commande":
                     st.markdown(f"<p style='font-size: 16px; font-weight: 700; color:#2E7D32; margin:0;'>{sous_total:,} FCFA</p>", unsafe_allow_html=True)
                 with c4:
                     if st.button("❌", key=f"supprimer_{i}"):
-                        panier.pop(i)
+                        st.session_state.panier.pop(i)
                         st.rerun()
                 st.markdown("<hr style='margin: 8px 0; border: 0.5px solid #edf2f7;'>", unsafe_allow_html=True)
 
-        # Résumé monétaire global
         st.markdown(f"""
         <div style="background: linear-gradient(135deg, #f8f9fa, #e8f5e9); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 6px solid #2E7D32;">
             <h4 style="margin: 0; color: #4a5568;">Total global ({total_articles} articles)</h4>
@@ -651,9 +605,6 @@ elif selected == "Commande":
         </div>
         """, unsafe_allow_html=True)
 
-        # ==========================
-        # INFOS CLIENT PRO
-        # ==========================
         st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>👤 Coordonnées & Livraison</h3>", unsafe_allow_html=True)
 
         col1, col2 = st.columns(2)
@@ -668,50 +619,23 @@ elif selected == "Commande":
         if paiement in ["Wave", "Orange Money"]:
             st.warning(f"💳 Service de transfert mobile actif : Merci d'effectuer le paiement au **+221 77 747 31 70** après envoi du formulaire.")
 
-        # ==========================
-        # RESUME DISCRET
-        # ==========================
         with st.expander("📄 Bordereau numérique de commande", expanded=False):
             for p in panier:
                 st.write(f"• {p['produit']} x{p['quantite']} — ({p['prix']})")
 
-        # ==========================
-        # GENERATION & TRANSFERT DE LA COMMANDE
-        # ==========================
         if st.button("🚀 Soumettre ma commande globale", use_container_width=True, type="primary"):
-            if not nom:
-                st.error("⚠️ Le champ 'Nom complet' est requis pour valider le bordereau.")
-            elif not telephone:
-                st.error("⚠️ Le numéro de 'Téléphone' est indispensable pour la livraison.")
-            elif not adresse:
-                st.error("⚠️ L'adresse de livraison est requise.")
+            if not nom or not telephone or not adresse:
+                st.error("⚠️ Tous les champs obligatoires (*) doivent être remplis.")
             else:
-                import urllib.parse
-                
                 texte_produits = ""
                 for p in panier:
                     texte_produits += f"• {p['produit']} x {p['quantite']} ({p['prix']})\n"
 
-                message = f"""🌾 NOUVELLE COMMANDE - YOUAGRONOME
-
-👤 CLIENT :
-• Nom : {nom}
-• Tél : {telephone}
-• Adresse : {adresse}
-
-📦 ARTICLES COMMANDÉS :
-{texte_produits}
-💰 TOTAL ESTIMÉ : {total_financier:,} FCFA
-
-⚙️ LOGISTIQUE :
-• Paiement : {paiement}
-• Note : {commentaire if commentaire else 'Aucune description'}
-"""
+                message = f"""🌾 NOUVELLE COMMANDE - YOUAGRONOME\n\n👤 CLIENT :\n• Nom : {nom}\n• Tél : {telephone}\n• Adresse : {adresse}\n\n📦 ARTICLES COMMANDÉS :\n{texte_produits}\n💰 TOTAL ESTIMÉ : {total_financier:,} FCFA\n\n⚙️ LOGISTIQUE :\n• Paiement : {paiement}\n• Note : {commentaire if commentaire else 'Aucune description'}"""
 
                 whatsapp_link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + urllib.parse.quote(message)
                 email_link = f"mailto:{EMAIL_DEST}?subject=Commande Pro YouAgronoMe&body=" + urllib.parse.quote(message)
 
-                # Enregistrement dans l'historique
                 st.session_state.historique.append({
                     "client": nom,
                     "paiement": paiement,
@@ -719,36 +643,30 @@ elif selected == "Commande":
                     "commande": panier.copy()
                 })
 
-                st.success("🎉 Votre bon de commande international a été généré avec succès !")
-                
+                st.success("🎉 Votre bon de commande a été généré avec succès !")
                 c1, c2 = st.columns(2)
                 with c1:
                     st.link_button("📱 Finaliser sur WhatsApp", whatsapp_link, use_container_width=True)
                 with c2:
                     st.link_button("📧 Archiver par Email", email_link, use_container_width=True)
 
-        # ==========================
-        # ACTIONS PANIER
-        # ==========================
         st.markdown("<br><hr>", unsafe_allow_html=True)
         if st.button("🧹 Vider entièrement le panier", use_container_width=True):
             st.session_state.panier = []
             st.rerun()
 
-    # Section Historique Pro (Reste visible en permanence)
     st.markdown("<h3 style='color: #4a5568; margin-top: 40px;'>📜 Vos Transactions Récentes</h3>", unsafe_allow_html=True)
     historique = st.session_state.historique
 
     if not historique:
         st.info("Aucune commande dans votre session courante.")
     else:
-        for i, cmd in enumerate(reversed(historique), start=1):
-            total_affiche = cmd.get('total', 'N/A')
-            with st.expander(f"📦 Reçu de Commande #{i} — {cmd['client']} ({total_affiche})"):
+        for idx, cmd in enumerate(reversed(historique), start=1):
+            with st.expander(f"📦 Reçu de Commande #{idx} — {cmd['client']} ({cmd['total']})"):
                 st.markdown(f"**Mode de Règlement :** `{cmd['paiement']}`")
                 for p in cmd["commande"]:
                     st.write(f"• {p['produit']} (x{p['quantite']})")
-# CONSEILS XXL 🌍
+ XXL 🌍
 # =====================================================
 elif selected == "Conseils":
 
@@ -1017,9 +935,6 @@ elif selected == "Conseils":
 # REALISATIONS (VERSION ULTIME MONDIALE XXXL)
 # =====================================================
 elif selected == "Réalisations":
-
-    import streamlit as st
-
     # =========================
     # 1. DESIGN & CSS CORPORATE ULTRA-PREMIUM
     # =========================
