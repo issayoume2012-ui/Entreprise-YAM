@@ -474,198 +474,85 @@ if selected=="À propos":
 
 # =====================================================
 # =====================================================
-# PRODUITS
-# =====================================================
 elif selected == "Produits":
 
-    import streamlit as st
+    st.title("🌾 Marché Agricole YouAgronoMe")
 
-    # =========================
-    # INIT PANIER
-    # =========================
-    if "panier" not in st.session_state:
-        st.session_state.panier = []
+    recherche = st.text_input(
+        "🔍 Rechercher un produit",
+        placeholder="Tomates, Riz, Mangues..."
+    )
 
-    # =========================
-    # CSS PROPRE (style JUMIA)
-    # =========================
-    st.markdown("""
-    <style>
-
-    .titre-produit{
-        text-align:center;
-        color:#1B5E20;
-        font-weight:900;
-        font-size:40px;
-        margin-bottom:5px;
-    }
-
-    .sub-produit{
-        text-align:center;
-        color:#666;
-        margin-bottom:25px;
-    }
-
-    .product-card{
-        background:white;
-        border-radius:14px;
-        overflow:hidden;
-        border:1px solid #eee;
-        box-shadow:0 2px 10px rgba(0,0,0,0.08);
-        transition:0.3s ease;
-        height:420px;
-        display:flex;
-        flex-direction:column;
-        justify-content:space-between;
-    }
-
-    .product-card:hover{
-        transform:translateY(-5px);
-        box-shadow:0 10px 25px rgba(0,0,0,0.15);
-    }
-
-    .product-img{
-        width:100%;
-        height:200px;
-        object-fit:cover;
-    }
-
-    .product-body{
-        padding:10px;
-        text-align:center;
-    }
-
-    .product-name{
-        font-size:18px;
-        font-weight:700;
-        color:#222;
-        margin:5px 0;
-    }
-
-    .product-price{
-        font-size:20px;
-        font-weight:900;
-        color:#F68B1E;
-        margin-bottom:10px;
-    }
-
-    .product-btn{
-        padding:8px;
-        margin:10px;
-    }
-
-    @media(max-width:768px){
-        .product-card{
-            height:380px;
-        }
-    }
-
-    </style>
-    """, unsafe_allow_html=True)
-
-    # =========================
-    # TITRE
-    # =========================
-    st.markdown("<div class='titre-produit'>🌾 Marché Agricole YouAgronoMe</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub-produit'>Produits frais, locaux et de qualité</div>", unsafe_allow_html=True)
-
-    # =========================
-    # RECHERCHE
-    # =========================
-    recherche = st.text_input("🔍 Rechercher un produit", placeholder="Tomates, Mangues, Riz...")
-
-    # =========================
-    # PRODUITS
-    # =========================
     produits = [
-        ("to.jpg", "Tomates", "3500 FCFA"),
-        ("fr.jpg", "Fraises", "5000 FCFA"),
-        ("og.jpg", "Oignons", "2500 FCFA"),
-        ("cr.jpg", "Carottes", "3000 FCFA"),
-        ("pm.jpg", "Piments", "2000 FCFA"),
-        ("cc.jpg", "Concombres", "2800 FCFA"),
-        ("pt.jpg", "Pommes de terre", "4500 FCFA"),
-        ("or.jpg", "Oranges", "4000 FCFA"),
-        ("mangue.jpg", "Mangues", "3500 FCFA"),
-        ("banane.jpg", "Bananes", "2500 FCFA"),
-        ("mais.jpg", "Maïs", "7000 FCFA"),
-        ("arachide.jpg", "Arachides", "8500 FCFA"),
-        ("riz.jpg", "Riz local", "12000 FCFA"),
-        ("mil.jpg", "Mil", "9000 FCFA"),
-        ("pasteque.jpg", "Pastèques", "6000 FCFA"),
-        ("citron.jpg", "Citrons", "2000 FCFA"),
-        ("niebe.jpg", "Niébé", "6500 FCFA"),
-        ("gombo.jpg", "Gombos", "2200 FCFA"),
-        ("bissap.jpg", "Bissap", "3000 FCFA"),
-        ("sesame.jpg", "Sésame", "7500 FCFA")
+        ("to.jpg","Tomates",3500,"Sac de 5 Kg"),
+        ("fr.jpg","Fraises",5000,"Sachet de 2 Kg"),
+        ("og.jpg","Oignons",2500,"Sac de 5 Kg"),
+        ("cr.jpg","Carottes",3000,"Sac de 5 Kg"),
+        ("pm.jpg","Piments",2000,"Sac de 3 Kg"),
+        ("cc.jpg","Concombres",2800,"Sac de 3 Kg"),
+        ("pt.jpg","Pommes de terre",4500,"Sac de 5 Kg"),
+        ("or.jpg","Oranges",4000,"Sac de 3 Kg"),
+        ("mangue.jpg","Mangues",3500,"Panier de 5 Kg"),
+        ("banane.jpg","Bananes",2500,"Régime"),
+        ("mais.jpg","Maïs",7000,"Sac de 25 Kg"),
+        ("arachide.jpg","Arachides",8500,"Sac de 10 Kg"),
+        ("riz.jpg","Riz local",12000,"Sac de 25 Kg"),
+        ("mil.jpg","Mil",9000,"Sac de 20 Kg"),
+        ("pasteque.jpg","Pastèques",6000,"Unité"),
+        ("citron.jpg","Citrons",2000,"Filet"),
+        ("niebe.jpg","Niébé",6500,"Sac de 10 Kg"),
+        ("gombo.jpg","Gombos",2200,"Panier"),
+        ("bissap.jpg","Bissap",3000,"Sachet de 2 Kg"),
+        ("sesame.jpg","Sésame",7500,"Sac de 10 Kg")
     ]
 
-    # =========================
-    # FILTRE
-    # =========================
     produits_filtres = [
         p for p in produits
         if recherche.lower() in p[1].lower()
     ]
 
-    if not produits_filtres:
-        st.warning("Aucun produit trouvé.")
-    else:
+    cols = st.columns(4)
 
-        cols = st.columns(4)
+    for i, produit in enumerate(produits_filtres):
 
-        for i, (image, nom, prix) in enumerate(produits_filtres):
+        image, nom, prix, unite = produit
 
-            with cols[i % 4]:
+        with cols[i % 4]:
 
-                # CARD HTML (TOUT INCLUS → plus de bug)
-                st.markdown(f"""
-                <div class="product-card">
+            with st.container(border=True):
 
-                    <img src="{image}" class="product-img">
+                try:
+                    img = Image.open(image)
+                    img = img.resize((500,350))
+                    st.image(img, use_container_width=True)
+                except:
+                    st.warning("Image introuvable")
 
-                    <div class="product-body">
+                st.subheader(nom)
+                st.success(f"{prix:,} FCFA")
+                st.caption(unite)
 
-                        <div class="product-name">{nom}</div>
-
-                        <div class="product-price">💰 {prix}</div>
-
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # quantité
                 qte = st.number_input(
                     "Quantité",
                     min_value=1,
-                    max_value=100,
                     value=1,
                     key=f"qte_{i}"
                 )
 
-                # bouton panier
-                if st.button("🛒 Ajouter au panier", key=f"btn_{i}", use_container_width=True):
+                if st.button(
+                    "🛒 Ajouter",
+                    key=f"ajout_{i}",
+                    use_container_width=True
+                ):
 
-                    existe = False
+                    st.session_state.panier.append({
+                        "produit": nom,
+                        "prix": prix,
+                        "quantite": qte
+                    })
 
-                    for item in st.session_state.panier:
-                        if item["produit"] == nom:
-                            item["quantite"] += qte
-                            existe = True
-                            break
-
-                    if not existe:
-                        st.session_state.panier.append({
-                            "produit": nom,
-                            "prix": prix,
-                            "quantite": qte
-                        })
-
-                    st.success(f"✅ {qte} x {nom} ajouté(s) au panier")
-
-    st.divider()
-
-    st.info(f"🛒 Produits dans le panier : {len(st.session_state.panier)}")
+                    st.success(f"{nom} ajouté au panier")
+                    st.rerun()
 elif selected == "Commande":
     # Sécurisation des clés globales nécessaires
     if "panier" not in st.session_state:
