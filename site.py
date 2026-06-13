@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import urllib.parse
+from streamlit_option_menu import option_menu
 
 # =====================================================
 # CONFIG
@@ -75,29 +76,14 @@ div[data-testid="stMarkdownContainer"] > div {
 }
 </style>
 """, unsafe_allow_html=True)
-st.markdown("""
-<style>
-div[role="radiogroup"]{
-    justify-content:center;
-    gap:10px;
-}
-
-div[role="radiogroup"] label{
-    background:#f1f8e9;
-    padding:12px 20px;
-    border-radius:12px;
-    border:1px solid #c8e6c9;
-}
-</style>
-""", unsafe_allow_html=True)
 
 
 # =====================================================
 # BANDE DE NAVIGATION HORIZONTALE XXL
 # =====================================================
-selected = st.radio(
-    "",
-    [
+selected = option_menu(
+    menu_title=None,
+    options=[
         "Accueil",
         "Produits",
         "Commande",
@@ -105,9 +91,45 @@ selected = st.radio(
         "Réalisations",
         "Contact"
     ],
-    horizontal=True,
-    label_visibility="collapsed"
+    icons=[
+        "house-fill",
+        "basket-fill",
+        "cart-fill",
+        "book-fill",
+        "bar-chart-fill",
+        "people-fill",
+        "telephone-fill"
+    ],
+    orientation="horizontal", # Mode barre supérieure horizontale
+    styles={
+        "container": {
+            "padding": "12px !important", 
+            "background-color": "rgba(255, 255, 255, 0.95)",
+            "border-radius": "24px",
+            "box-shadow": "0 15px 35px rgba(0,0,0,0.06)",
+            "border": "1px solid rgba(0,0,0,0.03)"
+        },
+        # Onglets inactifs
+        "nav-link": {
+            "color": "#444444",
+            "background-color": "transparent",
+        },
+        # Effet au survol (Hover)
+        "nav-link-hover": {
+            "background-color": "rgba(67, 160, 71, 0.1)",
+            "color": "#1B5E20",
+            "transform": "translateY(-3px)" 
+        },
+        # Onglet actif (Dégradé Eau & Plante)
+        "nav-link-selected": {
+            "background": "linear-gradient(135deg, #1B5E20, #0288D1)",
+            "color": "white",
+            "font-weight": "800",
+            "box-shadow": "0 10px 25px rgba(27, 94, 32, 0.25)"
+        }
+    }
 )
+
 # Accueil=====================================================
 if selected == "Accueil":
 
@@ -473,86 +495,92 @@ if selected=="À propos":
     """, unsafe_allow_html=True)
 
 # =====================================================
-# =====================================================
 elif selected == "Produits":
+    # Initialisation du panier si non existant
+    if "panier" not in st.session_state:
+        st.session_state.panier = []
 
-    st.title("🌾 Marché Agricole YouAgronoMe")
-
-    recherche = st.text_input(
-        "🔍 Rechercher un produit",
-        placeholder="Tomates, Riz, Mangues..."
-    )
+    st.title("🌾 Notre Marché Agricole")
+    st.markdown("Parcourez nos produits frais et ajoutez-les à votre panier.")
+    
+    # Barre de recherche (Typique d'un site e-commerce)
+    recherche = st.text_input("🔍 Rechercher un produit...", "")
+    st.divider()
 
     produits = [
-        ("to.jpg","Tomates",3500,"Sac de 5 Kg"),
-        ("fr.jpg","Fraises",5000,"Sachet de 2 Kg"),
-        ("og.jpg","Oignons",2500,"Sac de 5 Kg"),
-        ("cr.jpg","Carottes",3000,"Sac de 5 Kg"),
-        ("pm.jpg","Piments",2000,"Sac de 3 Kg"),
-        ("cc.jpg","Concombres",2800,"Sac de 3 Kg"),
-        ("pt.jpg","Pommes de terre",4500,"Sac de 5 Kg"),
-        ("or.jpg","Oranges",4000,"Sac de 3 Kg"),
-        ("mangue.jpg","Mangues",3500,"Panier de 5 Kg"),
-        ("banane.jpg","Bananes",2500,"Régime"),
-        ("mais.jpg","Maïs",7000,"Sac de 25 Kg"),
-        ("arachide.jpg","Arachides",8500,"Sac de 10 Kg"),
-        ("riz.jpg","Riz local",12000,"Sac de 25 Kg"),
-        ("mil.jpg","Mil",9000,"Sac de 20 Kg"),
-        ("pasteque.jpg","Pastèques",6000,"Unité"),
-        ("citron.jpg","Citrons",2000,"Filet"),
-        ("niebe.jpg","Niébé",6500,"Sac de 10 Kg"),
-        ("gombo.jpg","Gombos",2200,"Panier"),
-        ("bissap.jpg","Bissap",3000,"Sachet de 2 Kg"),
-        ("sesame.jpg","Sésame",7500,"Sac de 10 Kg")
+        ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
+        ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg"),
+        ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg"),
+        ("cr.jpg", "Carottes", "3000 FCFA par sac de 5Kg"),
+        ("pm.jpg", "Piments", "2000 FCFA par sac de 3Kg"),
+        ("cc.jpg", "Concombres", "2800 FCFA par sac de 3Kg"),
+        ("pt.jpg", "Pommes de terre", "4500 FCFA par sachet de 5Kg"),
+        ("or.jpg", "Oranges", "4000 FCFA par sac de 3Kg"),
+        ("mangue.jpg", "Mangues", "3500 FCFA par panier de 5Kg"),
+        ("banane.jpg", "Bananes", "2500 FCFA par régime"),
+        ("mais.jpg", "Maïs", "7000 FCFA par sac de 25Kg"),
+        ("arachide.jpg", "Arachides", "8500 FCFA par sac de 10Kg"),
+        ("riz.jpg", "Riz local", "12000 FCFA par sac de 25Kg"),
+        ("mil.jpg", "Mil", "9000 FCFA par sac de 20Kg"),
+        ("pasteque.jpg", "Pastèques", "6000 FCFA l’unité"),
+        ("citron.jpg", "Citrons", "2000 FCFA par filet"),
+        ("niebe.jpg", "Niébé", "6500 FCFA par sac de 10Kg"),
+        ("gombo.jpg", "Gombos", "2200 FCFA par panier"),
+        ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg"),
+        ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
     ]
 
-    produits_filtres = [
-        p for p in produits
-        if recherche.lower() in p[1].lower()
-    ]
+    # Filtrer la liste en fonction de la recherche de l'utilisateur
+    produits_filtres = [p for p in produits if recherche.lower() in p[1].lower()]
 
-    cols = st.columns(4)
+    if not produits_filtres:
+        st.warning("Aucun produit ne correspond à votre recherche.")
+    else:
+        # Utilisation de 4 colonnes pour un rendu "Grille E-commerce"
+        cols = st.columns(4)
 
-    for i, produit in enumerate(produits_filtres):
-
-        image, nom, prix, unite = produit
-
-        with cols[i % 4]:
-
-            with st.container(border=True):
-
-                try:
-                    img = Image.open(image)
-                    img = img.resize((500,350))
-                    st.image(img, use_container_width=True)
-                except:
-                    st.warning("Image introuvable")
-
-                st.subheader(nom)
-                st.success(f"{prix:,} FCFA")
-                st.caption(unite)
-
-                qte = st.number_input(
-                    "Quantité",
-                    min_value=1,
-                    value=1,
-                    key=f"qte_{i}"
-                )
-
-                if st.button(
-                    "🛒 Ajouter",
-                    key=f"ajout_{i}",
-                    use_container_width=True
-                ):
-
-                    st.session_state.panier.append({
-                        "produit": nom,
-                        "prix": prix,
-                        "quantite": qte
-                    })
-
-                    st.success(f"{nom} ajouté au panier")
-                    st.rerun()
+        for i, p in enumerate(produits_filtres):
+            image, nom, description_prix = p
+            
+            with cols[i % 4]:
+                with st.container(border=True):
+                    # 1. L'image
+                    st.image(image, use_container_width=True)
+                    
+                    # 2. Le nom du produit
+                    st.subheader(nom)
+                    
+                    # 3. Le prix stylisé
+                    st.markdown(
+                        f"""
+                        <p style='color: #2e7d32; font-weight: bold; font-size: 1.1em; margin-bottom: 5px;'>
+                            {description_prix}
+                        </p>
+                        """, 
+                        unsafe_allow_html=True
+                    )
+                    
+                    # 4. Sélecteur de quantité
+                    qte_ajout = st.number_input("Quantité", min_value=1, max_value=50, value=1, key=f"qte_{nom}_{i}")
+                    
+                    # 5. Bouton d'ajout au panier
+                    if st.button("🛒 Ajouter", key=f"btn_{nom}_{i}", type="primary", use_container_width=True):
+                        # Vérification si le produit existe déjà pour combiner les quantités
+                        deja_au_panier = False
+                        for item in st.session_state.panier:
+                            if item["produit"] == nom:
+                                item["quantite"] += qte_ajout
+                                deja_au_panier = True
+                                break
+                        
+                        if not deja_au_panier:
+                            st.session_state.panier.append({
+                                "produit": nom,
+                                "prix": description_prix,
+                                "quantite": qte_ajout
+                            })
+                        
+                        st.toast(f"✅ {qte_ajout}x {nom} ajouté(s) au panier !")
 elif selected == "Commande":
     # Sécurisation des clés globales nécessaires
     if "panier" not in st.session_state:
