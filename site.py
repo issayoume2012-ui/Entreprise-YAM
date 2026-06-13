@@ -473,7 +473,6 @@ if selected=="À propos":
     """, unsafe_allow_html=True)
 
 # =====================================================
-```python
 elif selected == "Produits":
 
     if "panier" not in st.session_state:
