@@ -473,22 +473,62 @@ if selected=="À propos":
     """, unsafe_allow_html=True)
 
 # =====================================================
+# =====================================================
+# PRODUITS
+# =====================================================
 elif selected == "Produits":
 
     if "panier" not in st.session_state:
         st.session_state.panier = []
 
+    # CSS PRODUITS
+    st.markdown("""
+    <style>
+
+    .produit-card{
+        background:white;
+        border-radius:18px;
+        padding:15px;
+        border:1px solid #e0e0e0;
+        box-shadow:0 4px 12px rgba(0,0,0,0.05);
+        text-align:center;
+        min-height:120px;
+        margin-bottom:10px;
+    }
+
+    .produit-nom{
+        font-size:22px;
+        font-weight:700;
+        color:#1B5E20;
+        margin-top:10px;
+        margin-bottom:10px;
+    }
+
+    .produit-prix{
+        font-size:18px;
+        font-weight:800;
+        color:#2E7D32;
+        margin-bottom:10px;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
     st.title("🌾 Notre Marché Agricole")
-    st.markdown("Parcourez nos produits frais et ajoutez-les à votre panier.")
+
+    st.markdown(
+        "Découvrez nos produits agricoles frais et ajoutez-les à votre panier."
+    )
 
     recherche = st.text_input(
-        "🔍 Rechercher un produit...",
-        placeholder="Tomates, Oignons, Riz..."
+        "🔍 Rechercher un produit",
+        placeholder="Tomates, Riz, Mangues..."
     )
 
     st.divider()
 
     produits = [
+
         ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
         ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg"),
         ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg"),
@@ -509,6 +549,7 @@ elif selected == "Produits":
         ("gombo.jpg", "Gombos", "2200 FCFA par panier"),
         ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg"),
         ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
+
     ]
 
     produits_filtres = [
@@ -516,8 +557,10 @@ elif selected == "Produits":
         if recherche.lower() in p[1].lower()
     ]
 
-    if not produits_filtres:
+    if len(produits_filtres) == 0:
+
         st.warning("Aucun produit trouvé.")
+
     else:
 
         cols = st.columns(4)
@@ -528,69 +571,80 @@ elif selected == "Produits":
 
                 with st.container(border=True):
 
-                    st.image(
-                        image,
-                        width=250
-                    )
+                    # IMAGE
+                    try:
+                        st.image(
+                            image,
+                            width=220
+                        )
+                    except:
+                        st.image(
+                            "https://via.placeholder.com/220x220.png?text=Produit",
+                            width=220
+                        )
 
+                    # NOM
                     st.markdown(
                         f"""
-                        <div style="
-                            min-height:70px;
-                            text-align:center;
-                        ">
-                            <h4 style="
-                                margin-bottom:5px;
-                                color:#1B5E20;
-                            ">
-                                {nom}
-                            </h4>
+                        <div class="produit-card">
 
-                            <p style="
-                                color:#2E7D32;
-                                font-weight:bold;
-                                font-size:17px;
-                            ">
-                                {prix}
-                            </p>
+                        <div class="produit-nom">
+                        {nom}
+                        </div>
+
+                        <div class="produit-prix">
+                        💰 {prix}
+                        </div>
+
                         </div>
                         """,
                         unsafe_allow_html=True
                     )
 
-                    qte_ajout = st.number_input(
+                    # QUANTITE
+                    qte = st.number_input(
                         "Quantité",
                         min_value=1,
-                        max_value=50,
+                        max_value=100,
                         value=1,
-                        key=f"qte_{nom}_{i}"
+                        key=f"qte_{i}"
                     )
 
+                    # BOUTON
                     if st.button(
                         "🛒 Ajouter au panier",
-                        key=f"btn_{nom}_{i}",
+                        key=f"btn_{i}",
                         use_container_width=True,
                         type="primary"
                     ):
 
-                        trouve = False
+                        existe = False
 
                         for item in st.session_state.panier:
+
                             if item["produit"] == nom:
-                                item["quantite"] += qte_ajout
-                                trouve = True
+
+                                item["quantite"] += qte
+                                existe = True
                                 break
 
-                        if not trouve:
+                        if not existe:
+
                             st.session_state.panier.append({
                                 "produit": nom,
                                 "prix": prix,
-                                "quantite": qte_ajout
+                                "quantite": qte
                             })
 
-                        st.toast(
-                            f"✅ {qte_ajout} x {nom} ajouté(s)"
+                        st.success(
+                            f"✅ {qte} x {nom} ajouté(s) au panier"
                         )
+
+    st.divider()
+
+    st.info(
+        f"🛒 Produits actuellement dans le panier : {len(st.session_state.panier)}"
+    )
 
 elif selected == "Commande":
     # Sécurisation des clés globales nécessaires
