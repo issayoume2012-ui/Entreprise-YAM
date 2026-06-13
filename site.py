@@ -666,7 +666,7 @@ elif selected == "Commande":
                 st.markdown(f"**Mode de Règlement :** `{cmd['paiement']}`")
                 for p in cmd["commande"]:
                     st.write(f"• {p['produit']} (x{p['quantite']})")
- XXL 🌍
+ # Conseil XXL 🌍
 # =====================================================
 elif selected == "Conseils":
 
