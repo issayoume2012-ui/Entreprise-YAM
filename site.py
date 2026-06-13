@@ -473,16 +473,20 @@ if selected=="À propos":
     """, unsafe_allow_html=True)
 
 # =====================================================
+```python
 elif selected == "Produits":
-    # Initialisation du panier si non existant
+
     if "panier" not in st.session_state:
         st.session_state.panier = []
 
     st.title("🌾 Notre Marché Agricole")
     st.markdown("Parcourez nos produits frais et ajoutez-les à votre panier.")
-    
-    # Barre de recherche (Typique d'un site e-commerce)
-    recherche = st.text_input("🔍 Rechercher un produit...", "")
+
+    recherche = st.text_input(
+        "🔍 Rechercher un produit...",
+        placeholder="Tomates, Oignons, Riz..."
+    )
+
     st.divider()
 
     produits = [
@@ -508,57 +512,87 @@ elif selected == "Produits":
         ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
     ]
 
-    # Filtrer la liste en fonction de la recherche de l'utilisateur
-    produits_filtres = [p for p in produits if recherche.lower() in p[1].lower()]
+    produits_filtres = [
+        p for p in produits
+        if recherche.lower() in p[1].lower()
+    ]
 
     if not produits_filtres:
-        st.warning("Aucun produit ne correspond à votre recherche.")
+        st.warning("Aucun produit trouvé.")
     else:
-        # Utilisation de 4 colonnes pour un rendu "Grille E-commerce"
+
         cols = st.columns(4)
 
-        for i, p in enumerate(produits_filtres):
-            image, nom, description_prix = p
-            
+        for i, (image, nom, prix) in enumerate(produits_filtres):
+
             with cols[i % 4]:
+
                 with st.container(border=True):
-                    # 1. L'image
-                    st.image(image, use_container_width=True)
-                    
-                    # 2. Le nom du produit
-                    st.subheader(nom)
-                    
-                    # 3. Le prix stylisé
+
+                    st.image(
+                        image,
+                        width=250
+                    )
+
                     st.markdown(
                         f"""
-                        <p style='color: #2e7d32; font-weight: bold; font-size: 1.1em; margin-bottom: 5px;'>
-                            {description_prix}
-                        </p>
-                        """, 
+                        <div style="
+                            min-height:70px;
+                            text-align:center;
+                        ">
+                            <h4 style="
+                                margin-bottom:5px;
+                                color:#1B5E20;
+                            ">
+                                {nom}
+                            </h4>
+
+                            <p style="
+                                color:#2E7D32;
+                                font-weight:bold;
+                                font-size:17px;
+                            ">
+                                {prix}
+                            </p>
+                        </div>
+                        """,
                         unsafe_allow_html=True
                     )
-                    
-                    # 4. Sélecteur de quantité
-                    qte_ajout = st.number_input("Quantité", min_value=1, max_value=50, value=1, key=f"qte_{nom}_{i}")
-                    
-                    # 5. Bouton d'ajout au panier
-                    if st.button("🛒 Ajouter", key=f"btn_{nom}_{i}", type="primary", use_container_width=True):
-                        # Vérification si le produit existe déjà pour combiner les quantités
-                        deja_au_panier = False
+
+                    qte_ajout = st.number_input(
+                        "Quantité",
+                        min_value=1,
+                        max_value=50,
+                        value=1,
+                        key=f"qte_{nom}_{i}"
+                    )
+
+                    if st.button(
+                        "🛒 Ajouter au panier",
+                        key=f"btn_{nom}_{i}",
+                        use_container_width=True,
+                        type="primary"
+                    ):
+
+                        trouve = False
+
                         for item in st.session_state.panier:
                             if item["produit"] == nom:
                                 item["quantite"] += qte_ajout
-                                deja_au_panier = True
+                                trouve = True
                                 break
-                        
-                        if not deja_au_panier:
+
+                        if not trouve:
                             st.session_state.panier.append({
                                 "produit": nom,
-                                "prix": description_prix,
+                                "prix": prix,
                                 "quantite": qte_ajout
                             })
-                        
-                        st.toast(f"✅ {qte_ajout}x {nom} ajouté(s) au panier !")
+
+                        st.toast(
+                            f"✅ {qte_ajout} x {nom} ajouté(s)"
+                        )
+
 elif selected == "Commande":
     # Sécurisation des clés globales nécessaires
     if "panier" not in st.session_state:
