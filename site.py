@@ -478,105 +478,106 @@ if selected=="À propos":
 # =====================================================
 elif selected == "Produits":
 
+    import streamlit as st
+
+    # =========================
+    # INIT PANIER
+    # =========================
     if "panier" not in st.session_state:
         st.session_state.panier = []
 
+    # =========================
+    # CSS PROPRE (style JUMIA)
+    # =========================
     st.markdown("""
     <style>
-
-    .produit-card{
-        background:white;
-        border-radius:12px;
-        overflow:hidden;
-        border:1px solid #eaeaea;
-        box-shadow:0 2px 10px rgba(0,0,0,0.08);
-        transition:all 0.3s ease;
-        margin-bottom:15px;
-        min-height:180px;
-    }
-
-    .produit-card:hover{
-        transform:translateY(-4px);
-        box-shadow:0 8px 20px rgba(0,0,0,0.15);
-    }
-
-    .produit-nom{
-        font-size:18px;
-        font-weight:700;
-        color:#222;
-        text-align:center;
-        min-height:50px;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        padding:5px;
-    }
-
-    .produit-prix{
-        font-size:20px;
-        font-weight:800;
-        color:#F68B1E;
-        text-align:center;
-        margin-top:5px;
-        margin-bottom:10px;
-    }
-
-    .produit-desc{
-        text-align:center;
-        color:#666;
-        font-size:13px;
-        margin-bottom:10px;
-    }
-
-    div[data-testid="stImage"] img{
-        width:100% !important;
-        height:250px !important;
-        object-fit:cover !important;
-        border-radius:12px 12px 0px 0px !important;
-    }
 
     .titre-produit{
         text-align:center;
         color:#1B5E20;
-        font-weight:800;
-        font-size:38px;
+        font-weight:900;
+        font-size:40px;
+        margin-bottom:5px;
+    }
+
+    .sub-produit{
+        text-align:center;
+        color:#666;
+        margin-bottom:25px;
+    }
+
+    .product-card{
+        background:white;
+        border-radius:14px;
+        overflow:hidden;
+        border:1px solid #eee;
+        box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        transition:0.3s ease;
+        height:420px;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+    }
+
+    .product-card:hover{
+        transform:translateY(-5px);
+        box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .product-img{
+        width:100%;
+        height:200px;
+        object-fit:cover;
+    }
+
+    .product-body{
+        padding:10px;
+        text-align:center;
+    }
+
+    .product-name{
+        font-size:18px;
+        font-weight:700;
+        color:#222;
+        margin:5px 0;
+    }
+
+    .product-price{
+        font-size:20px;
+        font-weight:900;
+        color:#F68B1E;
         margin-bottom:10px;
     }
 
+    .product-btn{
+        padding:8px;
+        margin:10px;
+    }
+
     @media(max-width:768px){
-
-        div[data-testid="stImage"] img{
-            height:180px !important;
-        }
-
-        .produit-nom{
-            font-size:16px;
-        }
-
-        .produit-prix{
-            font-size:18px;
+        .product-card{
+            height:380px;
         }
     }
 
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown(
-        "<div class='titre-produit'>🌾 Marché Agricole YouAgronoMe</div>",
-        unsafe_allow_html=True
-    )
+    # =========================
+    # TITRE
+    # =========================
+    st.markdown("<div class='titre-produit'>🌾 Marché Agricole YouAgronoMe</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-produit'>Produits frais, locaux et de qualité</div>", unsafe_allow_html=True)
 
-    st.markdown(
-        "Achetez des produits agricoles frais, locaux et de qualité."
-    )
+    # =========================
+    # RECHERCHE
+    # =========================
+    recherche = st.text_input("🔍 Rechercher un produit", placeholder="Tomates, Mangues, Riz...")
 
-    recherche = st.text_input(
-        "🔍 Rechercher un produit",
-        placeholder="Tomates, Mangues, Riz..."
-    )
-
+    # =========================
+    # PRODUITS
+    # =========================
     produits = [
-
         ("to.jpg", "Tomates", "3500 FCFA"),
         ("fr.jpg", "Fraises", "5000 FCFA"),
         ("og.jpg", "Oignons", "2500 FCFA"),
@@ -597,9 +598,11 @@ elif selected == "Produits":
         ("gombo.jpg", "Gombos", "2200 FCFA"),
         ("bissap.jpg", "Bissap", "3000 FCFA"),
         ("sesame.jpg", "Sésame", "7500 FCFA")
-
     ]
 
+    # =========================
+    # FILTRE
+    # =========================
     produits_filtres = [
         p for p in produits
         if recherche.lower() in p[1].lower()
@@ -615,38 +618,23 @@ elif selected == "Produits":
 
             with cols[i % 4]:
 
-                try:
-                    st.image(
-                        image,
-                        use_container_width=True
-                    )
-                except:
-                    st.image(
-                        "https://via.placeholder.com/500x500.png?text=Produit",
-                        use_container_width=True
-                    )
+                # CARD HTML (TOUT INCLUS → plus de bug)
+                st.markdown(f"""
+                <div class="product-card">
 
-                st.markdown(
-                    f"""
-                    <div class="produit-card">
+                    <img src="{image}" class="product-img">
 
-                        <div class="produit-nom">
-                            {nom}
-                        </div>
+                    <div class="product-body">
 
-                        <div class="produit-prix">
-                            💰 {prix}
-                        </div>
+                        <div class="product-name">{nom}</div>
 
-                        <div class="produit-desc">
-                            Produit agricole frais et disponible.
-                        </div>
+                        <div class="product-price">💰 {prix}</div>
 
                     </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                </div>
+                """, unsafe_allow_html=True)
 
+                # quantité
                 qte = st.number_input(
                     "Quantité",
                     min_value=1,
@@ -655,39 +643,29 @@ elif selected == "Produits":
                     key=f"qte_{i}"
                 )
 
-                if st.button(
-                    "🛒 Ajouter au panier",
-                    key=f"btn_{i}",
-                    use_container_width=True,
-                    type="primary"
-                ):
+                # bouton panier
+                if st.button("🛒 Ajouter au panier", key=f"btn_{i}", use_container_width=True):
 
                     existe = False
 
                     for item in st.session_state.panier:
-
                         if item["produit"] == nom:
                             item["quantite"] += qte
                             existe = True
                             break
 
                     if not existe:
-
                         st.session_state.panier.append({
                             "produit": nom,
                             "prix": prix,
                             "quantite": qte
                         })
 
-                    st.success(
-                        f"✅ {qte} x {nom} ajouté(s) au panier"
-                    )
+                    st.success(f"✅ {qte} x {nom} ajouté(s) au panier")
 
     st.divider()
 
-    st.info(
-        f"🛒 Produits dans le panier : {len(st.session_state.panier)}"
-    )
+    st.info(f"🛒 Produits dans le panier : {len(st.session_state.panier)}")
 elif selected == "Commande":
     # Sécurisation des clés globales nécessaires
     if "panier" not in st.session_state:
