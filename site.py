@@ -476,7 +476,6 @@ if selected=="À propos":
 # =====================================================
 # PRODUITS
 # =====================================================
-# =====================================================
 # PRODUITS
 # =====================================================
 elif selected == "Produits":
@@ -484,50 +483,36 @@ elif selected == "Produits":
     if "panier" not in st.session_state:
         st.session_state.panier = []
 
-    # CSS PRODUITS (Optimisé pour l'uniformité style Jumia/Alibaba)
+    # CSS PRODUITS
     st.markdown("""
     <style>
-    .img-container {
-        width: 100%;
-        height: 200px; /* Hauteur fixe pour toutes les images */
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 10px;
-        background-color: #f8f9fa;
-    }
-    
-    .img-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover; /* Recadre l'image proprement sans la déformer */
-        object-position: center;
+
+    .produit-card{
+        background:white;
+        border-radius:18px;
+        padding:15px;
+        border:1px solid #e0e0e0;
+        box-shadow:0 4px 12px rgba(0,0,0,0.05);
+        text-align:center;
+        min-height:120px;
+        margin-bottom:10px;
     }
 
-    .produit-card {
-        background: white;
-        border-radius: 18px;
-        padding: 15px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        text-align: center;
-        min-height: 120px;
-        margin-bottom: 10px;
+    .produit-nom{
+        font-size:22px;
+        font-weight:700;
+        color:#1B5E20;
+        margin-top:10px;
+        margin-bottom:10px;
     }
 
-    .produit-nom {
-        font-size: 20px;
-        font-weight: 700;
-        color: #1B5E20;
-        margin-top: 5px;
-        margin-bottom: 5px;
+    .produit-prix{
+        font-size:18px;
+        font-weight:800;
+        color:#2E7D32;
+        margin-bottom:10px;
     }
 
-    .produit-prix {
-        font-size: 16px;
-        font-weight: 800;
-        color: #2E7D32;
-        margin-bottom: 5px;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -545,6 +530,7 @@ elif selected == "Produits":
     st.divider()
 
     produits = [
+
         ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
         ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg"),
         ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg"),
@@ -565,6 +551,7 @@ elif selected == "Produits":
         ("gombo.jpg", "Gombos", "2200 FCFA par panier"),
         ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg"),
         ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
+
     ]
 
     produits_filtres = [
@@ -573,31 +560,44 @@ elif selected == "Produits":
     ]
 
     if len(produits_filtres) == 0:
+
         st.warning("Aucun produit trouvé.")
+
     else:
+
         cols = st.columns(4)
 
         for i, (image, nom, prix) in enumerate(produits_filtres):
-            with cols[i % 4]:
-                with st.container(border=True):
-                    
-                    # GESTION ET AFFICHAGE DE L'IMAGE UNIFORME
-                    import os
-                    # Vérifie si l'image locale existe, sinon met un placeholder
-                    img_url = image if os.path.exists(image) else "https://via.placeholder.com/300x300.png?text=Produit"
-                    
-                    st.markdown(f"""
-                        <div class="img-container">
-                            <img src="{img_url}" alt="{nom}">
-                        </div>
-                    """, unsafe_allow_html=True)
 
-                    # DETAILS DU PRODUIT
+            with cols[i % 4]:
+
+                with st.container(border=True):
+
+                    # IMAGE
+                    try:
+                        st.image(
+                            image,
+                            width=220
+                        )
+                    except:
+                        st.image(
+                            "https://via.placeholder.com/220x220.png?text=Produit",
+                            width=220
+                        )
+
+                    # NOM
                     st.markdown(
                         f"""
                         <div class="produit-card">
-                            <div class="produit-nom">{nom}</div>
-                            <div class="produit-prix">💰 {prix}</div>
+
+                        <div class="produit-nom">
+                        {nom}
+                        </div>
+
+                        <div class="produit-prix">
+                        💰 {prix}
+                        </div>
+
                         </div>
                         """,
                         unsafe_allow_html=True
@@ -619,24 +619,34 @@ elif selected == "Produits":
                         use_container_width=True,
                         type="primary"
                     ):
+
                         existe = False
+
                         for item in st.session_state.panier:
+
                             if item["produit"] == nom:
+
                                 item["quantite"] += qte
                                 existe = True
                                 break
 
                         if not existe:
+
                             st.session_state.panier.append({
                                 "produit": nom,
                                 "prix": prix,
                                 "quantite": qte
                             })
 
-                        st.success(f"✅ {qte} x {nom} ajouté(s)")
+                        st.success(
+                            f"✅ {qte} x {nom} ajouté(s) au panier"
+                        )
 
     st.divider()
-    st.info(f"🛒 Produits actuellement dans le panier : {len(st.session_state.panier)}")
+
+    st.info(
+        f"🛒 Produits actuellement dans le panier : {len(st.session_state.panier)}"
+    )
 elif selected == "Commande":
     # Sécurisation des clés globales nécessaires
     if "panier" not in st.session_state:
