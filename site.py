@@ -1,5 +1,4 @@
-
-# CONSEILimport streamlit as st
+import streamlit as st
 import time
 import urllib.parse
 
