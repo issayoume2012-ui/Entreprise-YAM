@@ -476,81 +476,127 @@ if selected=="À propos":
 # =====================================================
 # PRODUITS
 # =====================================================
-# PRODUITS
-# =====================================================
 elif selected == "Produits":
 
     if "panier" not in st.session_state:
         st.session_state.panier = []
 
-    # CSS PRODUITS
     st.markdown("""
     <style>
 
     .produit-card{
         background:white;
-        border-radius:18px;
-        padding:15px;
-        border:1px solid #e0e0e0;
-        box-shadow:0 4px 12px rgba(0,0,0,0.05);
-        text-align:center;
-        min-height:120px;
-        margin-bottom:10px;
+        border-radius:12px;
+        overflow:hidden;
+        border:1px solid #eaeaea;
+        box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        transition:all 0.3s ease;
+        margin-bottom:15px;
+        min-height:180px;
+    }
+
+    .produit-card:hover{
+        transform:translateY(-4px);
+        box-shadow:0 8px 20px rgba(0,0,0,0.15);
     }
 
     .produit-nom{
-        font-size:22px;
+        font-size:18px;
         font-weight:700;
-        color:#1B5E20;
-        margin-top:10px;
-        margin-bottom:10px;
+        color:#222;
+        text-align:center;
+        min-height:50px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        padding:5px;
     }
 
     .produit-prix{
-        font-size:18px;
+        font-size:20px;
         font-weight:800;
-        color:#2E7D32;
+        color:#F68B1E;
+        text-align:center;
+        margin-top:5px;
         margin-bottom:10px;
+    }
+
+    .produit-desc{
+        text-align:center;
+        color:#666;
+        font-size:13px;
+        margin-bottom:10px;
+    }
+
+    div[data-testid="stImage"] img{
+        width:100% !important;
+        height:250px !important;
+        object-fit:cover !important;
+        border-radius:12px 12px 0px 0px !important;
+    }
+
+    .titre-produit{
+        text-align:center;
+        color:#1B5E20;
+        font-weight:800;
+        font-size:38px;
+        margin-bottom:10px;
+    }
+
+    @media(max-width:768px){
+
+        div[data-testid="stImage"] img{
+            height:180px !important;
+        }
+
+        .produit-nom{
+            font-size:16px;
+        }
+
+        .produit-prix{
+            font-size:18px;
+        }
     }
 
     </style>
     """, unsafe_allow_html=True)
 
-    st.title("🌾 Notre Marché Agricole")
+    st.markdown(
+        "<div class='titre-produit'>🌾 Marché Agricole YouAgronoMe</div>",
+        unsafe_allow_html=True
+    )
 
     st.markdown(
-        "Découvrez nos produits agricoles frais et ajoutez-les à votre panier."
+        "Achetez des produits agricoles frais, locaux et de qualité."
     )
 
     recherche = st.text_input(
         "🔍 Rechercher un produit",
-        placeholder="Tomates, Riz, Mangues..."
+        placeholder="Tomates, Mangues, Riz..."
     )
-
-    st.divider()
 
     produits = [
 
-        ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
-        ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg"),
-        ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg"),
-        ("cr.jpg", "Carottes", "3000 FCFA par sac de 5Kg"),
-        ("pm.jpg", "Piments", "2000 FCFA par sac de 3Kg"),
-        ("cc.jpg", "Concombres", "2800 FCFA par sac de 3Kg"),
-        ("pt.jpg", "Pommes de terre", "4500 FCFA par sachet de 5Kg"),
-        ("or.jpg", "Oranges", "4000 FCFA par sac de 3Kg"),
-        ("mangue.jpg", "Mangues", "3500 FCFA par panier de 5Kg"),
-        ("banane.jpg", "Bananes", "2500 FCFA par régime"),
-        ("mais.jpg", "Maïs", "7000 FCFA par sac de 25Kg"),
-        ("arachide.jpg", "Arachides", "8500 FCFA par sac de 10Kg"),
-        ("riz.jpg", "Riz local", "12000 FCFA par sac de 25Kg"),
-        ("mil.jpg", "Mil", "9000 FCFA par sac de 20Kg"),
-        ("pasteque.jpg", "Pastèques", "6000 FCFA l’unité"),
-        ("citron.jpg", "Citrons", "2000 FCFA par filet"),
-        ("niebe.jpg", "Niébé", "6500 FCFA par sac de 10Kg"),
-        ("gombo.jpg", "Gombos", "2200 FCFA par panier"),
-        ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg"),
-        ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
+        ("to.jpg", "Tomates", "3500 FCFA"),
+        ("fr.jpg", "Fraises", "5000 FCFA"),
+        ("og.jpg", "Oignons", "2500 FCFA"),
+        ("cr.jpg", "Carottes", "3000 FCFA"),
+        ("pm.jpg", "Piments", "2000 FCFA"),
+        ("cc.jpg", "Concombres", "2800 FCFA"),
+        ("pt.jpg", "Pommes de terre", "4500 FCFA"),
+        ("or.jpg", "Oranges", "4000 FCFA"),
+        ("mangue.jpg", "Mangues", "3500 FCFA"),
+        ("banane.jpg", "Bananes", "2500 FCFA"),
+        ("mais.jpg", "Maïs", "7000 FCFA"),
+        ("arachide.jpg", "Arachides", "8500 FCFA"),
+        ("riz.jpg", "Riz local", "12000 FCFA"),
+        ("mil.jpg", "Mil", "9000 FCFA"),
+        ("pasteque.jpg", "Pastèques", "6000 FCFA"),
+        ("citron.jpg", "Citrons", "2000 FCFA"),
+        ("niebe.jpg", "Niébé", "6500 FCFA"),
+        ("gombo.jpg", "Gombos", "2200 FCFA"),
+        ("bissap.jpg", "Bissap", "3000 FCFA"),
+        ("sesame.jpg", "Sésame", "7500 FCFA")
 
     ]
 
@@ -559,10 +605,8 @@ elif selected == "Produits":
         if recherche.lower() in p[1].lower()
     ]
 
-    if len(produits_filtres) == 0:
-
+    if not produits_filtres:
         st.warning("Aucun produit trouvé.")
-
     else:
 
         cols = st.columns(4)
@@ -571,81 +615,78 @@ elif selected == "Produits":
 
             with cols[i % 4]:
 
-                with st.container(border=True):
+                try:
+                    st.image(
+                        image,
+                        use_container_width=True
+                    )
+                except:
+                    st.image(
+                        "https://via.placeholder.com/500x500.png?text=Produit",
+                        use_container_width=True
+                    )
 
-                    # IMAGE
-                    try:
-                        st.image(
-                            image,
-                            width=220
-                        )
-                    except:
-                        st.image(
-                            "https://via.placeholder.com/220x220.png?text=Produit",
-                            width=220
-                        )
-
-                    # NOM
-                    st.markdown(
-                        f"""
-                        <div class="produit-card">
+                st.markdown(
+                    f"""
+                    <div class="produit-card">
 
                         <div class="produit-nom">
-                        {nom}
+                            {nom}
                         </div>
 
                         <div class="produit-prix">
-                        💰 {prix}
+                            💰 {prix}
                         </div>
 
+                        <div class="produit-desc">
+                            Produit agricole frais et disponible.
                         </div>
-                        """,
-                        unsafe_allow_html=True
+
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                qte = st.number_input(
+                    "Quantité",
+                    min_value=1,
+                    max_value=100,
+                    value=1,
+                    key=f"qte_{i}"
+                )
+
+                if st.button(
+                    "🛒 Ajouter au panier",
+                    key=f"btn_{i}",
+                    use_container_width=True,
+                    type="primary"
+                ):
+
+                    existe = False
+
+                    for item in st.session_state.panier:
+
+                        if item["produit"] == nom:
+                            item["quantite"] += qte
+                            existe = True
+                            break
+
+                    if not existe:
+
+                        st.session_state.panier.append({
+                            "produit": nom,
+                            "prix": prix,
+                            "quantite": qte
+                        })
+
+                    st.success(
+                        f"✅ {qte} x {nom} ajouté(s) au panier"
                     )
-
-                    # QUANTITE
-                    qte = st.number_input(
-                        "Quantité",
-                        min_value=1,
-                        max_value=100,
-                        value=1,
-                        key=f"qte_{i}"
-                    )
-
-                    # BOUTON
-                    if st.button(
-                        "🛒 Ajouter au panier",
-                        key=f"btn_{i}",
-                        use_container_width=True,
-                        type="primary"
-                    ):
-
-                        existe = False
-
-                        for item in st.session_state.panier:
-
-                            if item["produit"] == nom:
-
-                                item["quantite"] += qte
-                                existe = True
-                                break
-
-                        if not existe:
-
-                            st.session_state.panier.append({
-                                "produit": nom,
-                                "prix": prix,
-                                "quantite": qte
-                            })
-
-                        st.success(
-                            f"✅ {qte} x {nom} ajouté(s) au panier"
-                        )
 
     st.divider()
 
     st.info(
-        f"🛒 Produits actuellement dans le panier : {len(st.session_state.panier)}"
+        f"🛒 Produits dans le panier : {len(st.session_state.panier)}"
     )
 elif selected == "Commande":
     # Sécurisation des clés globales nécessaires
