@@ -98,12 +98,12 @@ div[role="radiogroup"] label{
 selected = st.radio(
     "",
     [
-        "🏠 Accueil",
-        "🛒 Produits",
-        "📦 Commande",
-        "📚 Conseils",
-        "🏆 Réalisations",
-        "📞 Contact"
+        "Accueil",
+        "Produits",
+        "Commande",
+        "Conseils",
+        "Réalisations",
+        "Contact"
     ],
     horizontal=True,
     label_visibility="collapsed"
