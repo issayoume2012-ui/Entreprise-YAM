@@ -1,7 +1,6 @@
 import streamlit as st
 import time
 import urllib.parse
-from streamlit_option_menu import option_menu
 
 # =====================================================
 # CONFIG
@@ -76,60 +75,39 @@ div[data-testid="stMarkdownContainer"] > div {
 }
 </style>
 """, unsafe_allow_html=True)
+st.markdown("""
+<style>
+div[role="radiogroup"]{
+    justify-content:center;
+    gap:10px;
+}
+
+div[role="radiogroup"] label{
+    background:#f1f8e9;
+    padding:12px 20px;
+    border-radius:12px;
+    border:1px solid #c8e6c9;
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 # =====================================================
 # BANDE DE NAVIGATION HORIZONTALE XXL
 # =====================================================
-selected = option_menu(
-    menu_title=None,
-    options=[
-        "Accueil",
-        "Produits",
-        "Commande",
-        "Conseils",
-        "Réalisations",
-        "Contact"
+selected = st.radio(
+    "",
+    [
+        "🏠 Accueil",
+        "🛒 Produits",
+        "📦 Commande",
+        "📚 Conseils",
+        "🏆 Réalisations",
+        "📞 Contact"
     ],
-    icons=[
-        "house-fill",
-        "basket-fill",
-        "cart-fill",
-        "book-fill",
-        "bar-chart-fill",
-        "people-fill",
-        "telephone-fill"
-    ],
-    orientation="horizontal", # Mode barre supérieure horizontale
-    styles={
-        "container": {
-            "padding": "12px !important", 
-            "background-color": "rgba(255, 255, 255, 0.95)",
-            "border-radius": "24px",
-            "box-shadow": "0 15px 35px rgba(0,0,0,0.06)",
-            "border": "1px solid rgba(0,0,0,0.03)"
-        },
-        # Onglets inactifs
-        "nav-link": {
-            "color": "#444444",
-            "background-color": "transparent",
-        },
-        # Effet au survol (Hover)
-        "nav-link-hover": {
-            "background-color": "rgba(67, 160, 71, 0.1)",
-            "color": "#1B5E20",
-            "transform": "translateY(-3px)" 
-        },
-        # Onglet actif (Dégradé Eau & Plante)
-        "nav-link-selected": {
-            "background": "linear-gradient(135deg, #1B5E20, #0288D1)",
-            "color": "white",
-            "font-weight": "800",
-            "box-shadow": "0 10px 25px rgba(27, 94, 32, 0.25)"
-        }
-    }
+    horizontal=True,
+    label_visibility="collapsed"
 )
-
 # Accueil=====================================================
 if selected == "Accueil":
 
