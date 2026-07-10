@@ -485,43 +485,61 @@ elif selected == "Produits":
     st.title("🌾 Notre Marché Agricole")
     st.markdown("Parcourez nos produits frais et ajoutez-les à votre panier.")
     
-    recherche = st.text_input("🔍 Rechercher un produit...", "")
+    # Barre de recherche et Catégories
+    col_search, col_cat = st.columns([2, 1])
+    with col_search:
+        recherche = st.text_input("🔍 Rechercher un produit...", "")
+    with col_cat:
+        categorie_choisie = st.selectbox("📁 Catégorie", ["Tous", "Fruits & Légumes", "Céréales & Graines"])
+
     st.divider()
 
+    # Liste enrichie avec une catégorie et un tag (ex: Promo, Nouveau, Stock Limité)
+    # Format : (image, nom, description_prix, categorie, tag)
     produits = [
-        ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg"),
-        ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg"),
-        ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg"),
-        ("cr.jpg", "Carottes", "3000 FCFA par sac de 5Kg"),
-        ("pm.jpg", "Piments", "2000 FCFA par sac de 3Kg"),
-        ("cc.jpg", "Concombres", "2800 FCFA par sac de 3Kg"),
-        ("pt.jpg", "Pommes de terre", "4500 FCFA par sachet de 5Kg"),
-        ("or.jpg", "Oranges", "4000 FCFA par sac de 3Kg"),
-        ("mangue.jpg", "Mangues", "3500 FCFA par panier de 5Kg"),
-        ("banane.jpg", "Bananes", "2500 FCFA par régime"),
-        ("mais.jpg", "Maïs", "7000 FCFA par sac de 25Kg"),
-        ("arachide.jpg", "Arachides", "8500 FCFA par sac de 10Kg"),
-        ("riz.jpg", "Riz local", "12000 FCFA par sac de 25Kg"),
-        ("mil.jpg", "Mil", "9000 FCFA par sac de 20Kg"),
-        ("pasteque.jpg", "Pastèques", "6000 FCFA l’unité"),
-        ("citron.jpg", "Citrons", "2000 FCFA par filet"),
-        ("niebe.jpg", "Niébé", "6500 FCFA par sac de 10Kg"),
-        ("gombo.jpg", "Gombos", "2200 FCFA par panier"),
-        ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg"),
-        ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg")
+        ("to.jpg", "Tomates", "3500 FCFA par sac de 5Kg", "Fruits & Légumes", "🔥 Promo"),
+        ("fr.jpg", "Fraises", "5000 FCFA par sachet de 2Kg", "Fruits & Légumes", ""),
+        ("og.jpg", "Oignons", "2500 FCFA par sac de 5Kg", "Fruits & Légumes", ""),
+        ("cr.jpg", "Carottes", "3000 FCFA par sac de 5Kg", "Fruits & Légumes", ""),
+        ("pm.jpg", "Piments", "2000 FCFA par sac de 3Kg", "Fruits & Légumes", "⚡ Stock limité"),
+        ("cc.jpg", "Concombres", "2800 FCFA par sac de 3Kg", "Fruits & Légumes", ""),
+        ("pt.jpg", "Pommes de terre", "4500 FCFA par sachet de 5Kg", "Fruits & Légumes", ""),
+        ("or.jpg", "Oranges", "4000 FCFA par sac de 3Kg", "Fruits & Légumes", ""),
+        ("mangue.jpg", "Mangues", "3500 FCFA par panier de 5Kg", "Fruits & Légumes", "✨ Saison"),
+        ("banane.jpg", "Bananes", "2500 FCFA par régime", "Fruits & Légumes", ""),
+        ("mais.jpg", "Maïs", "7000 FCFA par sac de 25Kg", "Céréales & Graines", ""),
+        ("arachide.jpg", "Arachides", "8500 FCFA par sac de 10Kg", "Céréales & Graines", ""),
+        ("riz.jpg", "Riz local", "12000 FCFA par sac de 25Kg", "Céréales & Graines", "⭐ Top Qualité"),
+        ("mil.jpg", "Mil", "9000 FCFA par sac de 20Kg", "Céréales & Graines", ""),
+        ("pasteque.jpg", "Pastèques", "6000 FCFA l’unité", "Fruits & Légumes", ""),
+        ("citron.jpg", "Citrons", "2000 FCFA par filet", "Fruits & Légumes", ""),
+        ("niebe.jpg", "Niébé", "6500 FCFA par sac de 10Kg", "Céréales & Graines", ""),
+        ("gombo.jpg", "Gombos", "2200 FCFA par panier", "Fruits & Légumes", ""),
+        ("bissap.jpg", "Bissap", "3000 FCFA par sachet de 2Kg", "Céréales & Graines", ""),
+        ("sesame.jpg", "Sésame", "7500 FCFA par sac de 10Kg", "Céréales & Graines", "")
     ]
 
-    produits_filtres = [p for p in produits if recherche.lower() in p[1].lower()]
+    # Double filtrage : Recherche textuelle + Catégorie
+    produits_filtres = [
+        p for p in produits 
+        if (recherche.lower() in p[1].lower()) and (categorie_choisie == "Tous" or p[3] == categorie_choisie)
+    ]
 
     if not produits_filtres:
         st.warning("Aucun produit ne correspond à votre recherche.")
     else:
         cols = st.columns(4)
         for i, p in enumerate(produits_filtres):
-            image, nom, description_prix = p
+            image, nom, description_prix, cat, tag = p
             
             with cols[i % 4]:
                 with st.container(border=True):
+                    # Affichage du Tag si présent
+                    if tag:
+                        st.markdown(f"<span style='background-color:#ffe0b2; color:#e65100; font-size:11px; padding:3px 8px; border-radius:10px; font-weight:bold;'>{tag}</span>", unsafe_allow_html=True)
+                    else:
+                        st.write("") # Espace vide pour l'alignement
+                        
                     try:
                         st.image(image, use_container_width=True)
                     except:
@@ -547,9 +565,11 @@ elif selected == "Produits":
                                 "quantite": qte_ajout
                             })
                         st.toast(f"✅ {qte_ajout}x {nom} ajouté(s) au panier !")
-
 # =====================================================
 elif selected == "Commande":
+    import urllib.parse
+    from datetime import datetime, timedelta
+
     st.markdown("<h1 style='text-align: center; color: #1B5E20; font-weight: 800;'>📦 Votre E-Panier & Facturation</h1>", unsafe_allow_html=True)
 
     NUMERO_WHATSAPP = "221777473170"
@@ -569,7 +589,7 @@ elif selected == "Commande":
         total_articles = 0
         total_financier = 0
 
-        # On utilise une boucle standard pour éviter les problèmes d'index avec pop()
+        # Affichage et gestion des articles présents dans le panier
         for i, item in enumerate(list(panier)):
             try:
                 partie_prix = item["prix"].split("FCFA")[0]
@@ -596,56 +616,167 @@ elif selected == "Commande":
                         st.rerun()
                 st.markdown("<hr style='margin: 8px 0; border: 0.5px solid #edf2f7;'>", unsafe_allow_html=True)
 
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #f8f9fa, #e8f5e9); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 6px solid #2E7D32;">
-            <h4 style="margin: 0; color: #4a5568;">Total global ({total_articles} articles)</h4>
-            <h2 style="margin: 5px 0 0 0; color: #1B5E20; font-weight: 800;">{total_financier:,} FCFA</h2>
-            <p style="margin: 0; font-size: 12px; color: #718096;">* Hors frais de livraison / transport</p>
-        </div>
-        """, unsafe_allow_html=True)
+        # Base de données géographique du Sénégal (14 Régions et leurs communes/localités majeures)
+        geo_senegal = {
+            "Dakar": ["Dakar Plateau", "Medina", "Grand Yoff", "Pikine", "Guediawaye", "Rufisque", "Diamniadio", "Parcelles Assainies", "Ngor", "Ouakam", "Mermoz", "Yoff"],
+            "Thiès": ["Thiès Ville", "Mbour", "Saly", "Joal-Fadiouth", "Tivaouane", "Mboro", "Pout", "Khombole", "Popenguine"],
+            "Diourbel": ["Diourbel Ville", "Touba Mosquée", "Mbacké", "Bambey"],
+            "Saint-Louis": ["Saint-Louis Ville", "Richard-Toll", "Dagana", "Podor", "Ndioum", "Ross Béthio"],
+            "Louga": ["Louga Ville", "Linguère", "Dahra", "Kebemer"],
+            "Fatick": ["Fatick Ville", "Foundiougne", "Gossas", "Sokone", "Diofior"],
+            "Kaolack": ["Kaolack Ville", "Nioro du Rip", "Guinguinéo", "Kahone"],
+            "Kaffrine": ["Kaffrine Ville", "Koungheul", "Birkelane", "Malem Hodar"],
+            "Tambacounda": ["Tambacounda Ville", "Bakel", "Goudiry", "Koumpentoum"],
+            "Kolda": ["Kolda Ville", "Vélingara", "Medina Yoro Foulah"],
+            "Ziguinchor": ["Ziguinchor Ville", "Bignona", "Oussouye", "Cap Skirring", "Kolda"],
+            "Sédhiou": ["Sédhiou Ville", "Goudomp", "Bounkiling"],
+            "Matam": ["Matam Ville", "Ourossogui", "Kanel", "Ranérou"],
+            "Kedougou": ["Kédougou Ville", "Saraya", "Salemata"]
+        }
 
-        st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>👤 Coordonnées & Livraison</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>⚙️ Réseau Logistique National & Facturation</h3>", unsafe_allow_html=True)
+        col_reg, col_com, col_promo = st.columns(3)
+        
+        with col_reg:
+            region_selectionnee = st.selectbox("📍 Région du Sénégal *", list(geo_senegal.keys()))
+            
+        with col_com:
+            commune_selectionnee = st.selectbox("🏙️ Commune / Localité *", geo_senegal[region_selectionnee])
+
+        # Calcul dynamique des frais de transport et des délais selon la région choisie
+        frais_livraison = 0
+        delai_estime = ""
+
+        if region_selectionnee == "Dakar":
+            frais_livraison = 2500
+            delai_estime = "⚡ Express : 24h chrono"
+        elif region_selectionnee == "Thiès":
+            frais_livraison = 3500
+            delai_estime = "🚛 Rapide : 24h à 48h"
+        elif region_selectionnee in ["Diourbel", "Fatick", "Kaolack", "Louga"]:
+            frais_livraison = 4500
+            delai_estime = "📦 48h à 72h maximum"
+        else:
+            # Régions périphériques et éloignées (Saint-Louis, Matam, Tamba, Casamance, Kédougou)
+            frais_livraison = 6000
+            delai_estime = "🗺️ Expédition Sud/Nord/Est : 72h à 96h (Via lignes partenaires)"
+
+        with col_promo:
+            code_promo = st.text_input("🎟️ Code Promo (Optionnel)", "").strip()
+            remise = 0
+            if code_promo.upper() == "YOU2026":
+                remise = int(total_financier * 0.10)
+                st.success("🎉 Code valide (-10%)")
+
+        # Application de la tarification logistique finale
+        total_final_net = total_financier + frais_livraison - remise
+        points_gagnes = total_final_net // 1000
+
+        # =====================================================================
+        st.info(f"📍 Réseau d'acheminement : Région de {region_selectionnee} — Secteur {commune_selectionnee}\n\n⏱️ Délai logistique estimé : {delai_estime}")
+        
+        c_sub, c_liv, c_rem = st.columns(3)
+        with c_sub:
+            st.text(f"Sous-total : {total_financier:,} FCFA")
+        with c_liv:
+            st.text(f"Frais de transport : {frais_livraison:,} FCFA")
+        with c_rem:
+            if remise > 0:
+                st.text(f"Réduction : -{remise:,} FCFA")
+        
+        st.metric(label="TOTAL NET À PAYER", value=f"{total_final_net:,} FCFA")
+        st.success(f"🌱 Gain fidélité YouAgronoMe : +{points_gagnes} points sur cette commande.")
+        #=====================================================================
+
+        st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>👤 Coordonnées du Destinataire & Planification</h3>", unsafe_allow_html=True)
 
         col1, col2 = st.columns(2)
         with col1:
             nom = st.text_input("Nom complet *", placeholder="Ex: Issa Youme")
-            telephone = st.text_input("Téléphone *", placeholder="Ex: 777473170")
-            adresse = st.text_input("Adresse de livraison exacte *", placeholder="Quartier, Rue, Ville...")
+            telephone = st.text_input("Téléphone fonctionnel (WhatsApp de préférence) *", placeholder="Ex: 777473170")
+            adresse = st.text_input("Complément d'adresse exacte *", placeholder="Rue, Quartier, Indications visuelles...")
         with col2:
             paiement = st.selectbox("Méthode de paiement", ["Présentiel", "Wave", "Orange Money"])
-            commentaire = st.text_area("Instructions spéciales", placeholder="Ex: Entrée en face de la mosquée, livrer avant midi...")
+            
+            # Calendrier de planification prenant en compte les délais minimums régionaux
+            delai_jours = 1 if region_selectionnee == "Dakar" else (2 if region_selectionnee == "Thiès" else 3)
+            date_min = datetime.now() + timedelta(days=delai_jours)
+            date_livraison = st.date_input("Date de réception souhaitée", value=date_min, min_value=datetime.now())
+            
+            creneau_horaire = st.selectbox("Créneau horaire préféré", [
+                "Matin (08h00 - 12h00)", 
+                "Après-midi (13h00 - 17h00)", 
+                "Fin de journée (17h00 - 20h00)"
+            ])
+            
+        commentaire = st.text_area("Instructions spéciales pour le transporteur", placeholder="Ex: Livrer à la gare routière, appeler mon correspondant sur place, etc...")
 
         if paiement in ["Wave", "Orange Money"]:
-            st.warning(f"💳 Service de transfert mobile actif : Merci d'effectuer le paiement au **+221 77 747 31 70** après envoi du formulaire.")
+            st.warning(f"💳 Moyen de Paiement Électronique Sélectionné : Merci d'exécuter votre transfert au **+221 77 747 31 70** dès soumission du formulaire.")
 
-        with st.expander("📄 Bordereau numérique de commande", expanded=False):
+        with st.expander("📄 Bordereau de chargement numérique", expanded=False):
             for p in panier:
                 st.write(f"• {p['produit']} x{p['quantite']} — ({p['prix']})")
 
+        # Soumission globale
         if st.button("🚀 Soumettre ma commande globale", use_container_width=True, type="primary"):
             if not nom or not telephone or not adresse:
-                st.error("⚠️ Tous les champs obligatoires (*) doivent être remplis.")
+                st.error("⚠️ Erreur : Tous les champs munis d'un astérisque (*) sont obligatoires.")
             else:
                 texte_produits = ""
                 for p in panier:
                     texte_produits += f"• {p['produit']} x {p['quantite']} ({p['prix']})\n"
 
-                message = f"""🌾 NOUVELLE COMMANDE - YOUAGRONOME\n\n👤 CLIENT :\n• Nom : {nom}\n• Tél : {telephone}\n• Adresse : {adresse}\n\n📦 ARTICLES COMMANDÉS :\n{texte_produits}\n💰 TOTAL ESTIMÉ : {total_financier:,} FCFA\n\n⚙️ LOGISTIQUE :\n• Paiement : {paiement}\n• Note : {commentaire if commentaire else 'Aucune description'}"""
+                # Payload textuel pour WhatsApp et Emails professionnels
+                message = f"""🌾 NOUVELLE COMMANDE - YOUAGRONOME\n\n👤 CLIENT :\n• Nom : {nom}\n• Tél : {telephone}\n• Région : {region_selectionnee}\n• Commune : {commune_selectionnee}\n• Adresse : {adresse}\n\n📅 PROGRAMMATION LOGISTIQUE :\n• Date estimée : {date_livraison.strftime('%d/%m/%Y')}\n• Période : {creneau_horaire}\n\n📦 DETAIL DES ARTICLES :\n{texte_produits}\n💰 SOUS-TOTAL : {total_financier:,} FCFA\n🚚 LOGISTIQUE REGIONALE : {frais_livraison:,} FCFA\n📉 REMISE APPLIQUEE : {remise:,} FCFA\n💵 TOTAL NET GLOBAL : {total_final_net:,} FCFA\n\n⚙️ MODALITES :\n• Paiement : {paiement}\n• Note client : {commentaire if commentaire else 'Aucune description'}"""
+
+                # Facture HTML Pro pour impression locale ou sauvegarde
+                html_facture = f"""
+                <div style="font-family: Arial, sans-serif; padding: 25px; border: 1px solid #ccffcc; max-width: 550px; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <h2 style="color: #1B5E20; text-align: center; margin-bottom: 0; font-weight: 800; letter-spacing: 1px;">YOUAGRONOME SÉNÉGAL</h2>
+                    <p style="text-align: center; font-size: 12px; color: #777; margin-top: 5px;">Réseau National de Distribution Agro-alimentaire</p>
+                    <hr style="border: 0.5px solid #e2e8f0; margin: 15px 0;">
+                    <p style="font-size: 13px; line-height: 1.6; color: #2d3748;">
+                        <b>Bénéficiaire :</b> {nom}<br>
+                        <b>Téléphone :</b> {telephone}<br>
+                        <b>Destination :</b> Région {region_selectionnee} — {commune_selectionnee}<br>
+                        <b>Adresse de livraison :</b> {adresse}<br>
+                        <b>Date programmée :</b> {date_livraison.strftime('%d/%m/%Y')} ({creneau_horaire})
+                    </p>
+                    <hr style="border: 0.5px solid #e2e8f0; margin: 15px 0;">
+                    <h4 style="color: #2E7D32; margin-bottom: 10px;">Éléments de la Commande :</h4>
+                    <p style="font-size: 13px; color: #4a5568; line-height: 1.6; background-color: #f7fafc; padding: 10px; border-radius: 6px;">{texte_produits.replace('\n', '<br>')}</p>
+                    <hr style="border: 0.5px dashed #cbd5e0; margin: 15px 0;">
+                    <table style="width: 100%; font-size: 14px; color: #4a5568; line-height: 2;">
+                        <tr><td>Cumul Marchandise :</td><td style="text-align: right; font-weight: 600;">{total_financier:,} FCFA</td></tr>
+                        <tr><td>Frais logistiques ({region_selectionnee}) :</td><td style="text-align: right; font-weight: 600;">{frais_livraison:,} FCFA</td></tr>
+                        <tr style="color: #c53030;"><td>Déduction commerciale :</td><td style="text-align: right; font-weight: 600;">-{remise:,} FCFA</td></tr>
+                        <tr style="font-size: 18px; font-weight: 800; color: #1B5E20;">
+                            <td style="padding-top: 12px; border-top: 1px solid #edf2f7;">Total Net À Payer :</td>
+                            <td style="text-align: right; padding-top: 12px; border-top: 1px solid #edf2f7;">{total_final_net:,} FCFA</td>
+                        </tr>
+                    </table>
+                    <p style="font-size: 11px; text-align: center; color: #a0aec0; margin-top: 30px; font-style: italic; border-top: 1px solid #edf2f7; padding-top: 10px;">Merci pour votre commande. Service Client National YouAgronoMe.</p>
+                </div>
+                """
 
                 whatsapp_link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + urllib.parse.quote(message)
-                email_link = f"mailto:{EMAIL_DEST}?subject=Commande Pro YouAgronoMe&body=" + urllib.parse.quote(message)
+                email_link = f"mailto:{EMAIL_DEST}?subject=Commande Nationale YouAgronoMe - {nom}&body=" + urllib.parse.quote(message)
 
+                # Sauvegarde au sein de la session utilisateur
                 st.session_state.historique.append({
                     "client": nom,
                     "paiement": paiement,
-                    "total": f"{total_financier:,} FCFA",
-                    "commande": panier.copy()
+                    "total": f"{total_final_net:,} FCFA",
+                    "commande": panier.copy(),
+                    "brut_texte": message,
+                    "html_facture": html_facture
                 })
 
-                st.success("🎉 Votre bon de commande a été généré avec succès !")
+                st.success("🎉 Votre bon de commande national a été généré avec succès !")
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.link_button("📱 Finaliser sur WhatsApp", whatsapp_link, use_container_width=True)
+                    st.link_button("📱 Finaliser via WhatsApp", whatsapp_link, use_container_width=True)
                 with c2:
                     st.link_button("📧 Archiver par Email", email_link, use_container_width=True)
 
@@ -654,18 +785,45 @@ elif selected == "Commande":
             st.session_state.panier = []
             st.rerun()
 
+    # Section Historique et Téléchargements des Factures Officiels
     st.markdown("<h3 style='color: #4a5568; margin-top: 40px;'>📜 Vos Transactions Récentes</h3>", unsafe_allow_html=True)
     historique = st.session_state.historique
 
     if not historique:
-        st.info("Aucune commande dans votre session courante.")
+        st.info("Aucune transaction enregistrée au cours de cette session active.")
     else:
         for idx, cmd in enumerate(reversed(historique), start=1):
-            with st.expander(f"📦 Reçu de Commande #{idx} — {cmd['client']} ({cmd['total']})"):
-                st.markdown(f"**Mode de Règlement :** `{cmd['paiement']}`")
-                for p in cmd["commande"]:
-                    st.write(f"• {p['produit']} (x{p['quantite']})")
- # Conseil XXL 🌍
+            with st.expander(f"📦 Commande #{idx} — {cmd['client']} ({cmd['total']})"):
+                st.markdown(f"**Règlement choisi :** `{cmd['paiement']}`")
+                
+                if "html_facture" in cmd:
+                    st.markdown(cmd["html_facture"], unsafe_allow_html=True)
+                    st.write("")
+                else:
+                    for p in cmd["commande"]:
+                        st.write(f"• {p['produit']} (x{p['quantite']})")
+                
+                btn_txt, btn_html = st.columns(2)
+                with btn_txt:
+                    st.download_button(
+                        label="📥 Télécharger le Reçu (TXT)",
+                        data=cmd.get("brut_texte", "Aucune donnée"),
+                        file_name=f"recu_youagronome_{idx}.txt",
+                        mime="text/plain",
+                        key=f"dl_txt_{idx}",
+                        use_container_width=True
+                    )
+                with btn_html:
+                    st.download_button(
+                        label="🖨️ Télécharger la Facture (HTML Officiel)",
+                        data=cmd.get("html_facture", "Aucune donnée"),
+                        file_name=f"facture_youagronome_{idx}.html",
+                        mime="text/html",
+                        key=f"dl_html_{idx}",
+                        use_container_width=True
+                    )
+# =====================================================
+# Conseil XXL 🌍
 # =====================================================
 elif selected == "Conseils":
 
@@ -825,11 +983,6 @@ elif selected == "Conseils":
                 st.markdown(detail)
 
     # =====================================================
-    # OUTILS SECTORIELS XXL ADJACENTS
-    # =====================================================
-    st.markdown("---")
-    
-    # =====================================================
     # OUTILS SECTORIELS XXL ADJACENTS (PILOTAGE & CONTACT)
     # =====================================================
     st.markdown("---")
@@ -857,16 +1010,16 @@ elif selected == "Conseils":
             
             # Base de données agronomique interne pour affiner les calculs
             data_cultures = {
-                "Tomates 🍅": {"besoin_eau": 6, "rendement_m2": 4.5},
-                "Oignons 🧅": {"besoin_eau": 5, "rendement_m2": 3.8},
-                "Fraises 🍓": {"besoin_eau": 4, "rendement_m2": 2.5},
-                "Carottes 🥕": {"besoin_eau": 4.5, "rendement_m2": 4.0},
-                "Pommes de terre 🥔": {"besoin_eau": 5.5, "rendement_m2": 3.5},
-                "Riz / Maïs 🌾": {"besoin_eau": 8, "rendement_m2": 1.2}
+                "Tomates 🍅": {"besoin_eau": 6, "rendement_m2": 4.5, "prix_vente_kg": 1.2, "cout_semence_m2": 0.3},
+                "Oignons 🧅": {"besoin_eau": 5, "rendement_m2": 3.8, "prix_vente_kg": 0.9, "cout_semence_m2": 0.2},
+                "Fraises 🍓": {"besoin_eau": 4, "rendement_m2": 2.5, "prix_vente_kg": 4.5, "cout_semence_m2": 0.8},
+                "Carottes 🥕": {"besoin_eau": 4.5, "rendement_m2": 4.0, "prix_vente_kg": 0.8, "cout_semence_m2": 0.15},
+                "Pommes de terre 🥔": {"besoin_eau": 5.5, "rendement_m2": 3.5, "prix_vente_kg": 0.7, "cout_semence_m2": 0.25},
+                "Riz / Maïs 🌾": {"besoin_eau": 8, "rendement_m2": 1.2, "prix_vente_kg": 0.5, "cout_semence_m2": 0.1}
             }
             
             culture_choisie = st.selectbox("Type de culture cible", list(data_cultures.keys()))
-            surface = st.number_input("Surface totale d'exploitation (en $m^2$)", min_value=10, max_value=500000, value=500, step=50)
+            surface = st.number_input("Surface totale d'exploitation (en m²)", min_value=10, max_value=500000, value=500, step=50)
             
             # Extraction des constantes agronomiques
             besoin_unitaire = data_cultures[culture_choisie]["besoin_eau"]
@@ -882,7 +1035,7 @@ elif selected == "Conseils":
                 st.metric(
                     label="Volume d'eau requis / jour", 
                     value=f"{besoin_eau_total:,} Litres", 
-                    delta=f"{besoin_unitaire} L / $m^2$"
+                    delta=f"{besoin_unitaire} L / m²"
                 )
             with m2:
                 if rendement_estime_kg >= 1000:
@@ -896,7 +1049,151 @@ elif selected == "Conseils":
                     delta="Objectif optimal"
                 )
             
-            st.caption(f"ℹ️ Paramétrage optimisé pour la culture de type **{culture_choisie}** en zone maraîchère sahélienne.")
+            st.caption(f"ℹ️ Paramétrage optimisé pour la culture de type **{culture_choisie}** en zone maraîchère.")
+
+    # =====================================================
+    # EXTENSION : 6 NOUVELLES FONCTIONNALITÉS AGRONOMIQUES
+    # =====================================================
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #1B5E20;'>🛠️ Suite d'Outils Décisionnels Avancés</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #666;'>Modules d'analyse en temps réel pour optimiser chaque mètre carré de votre exploitation.</p>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # -----------------------------------------------------
+    # LIGNE 1 : SOLS & METEO (Fonctionnalités 1 & 2)
+    # -----------------------------------------------------
+    f1, f2 = st.columns(2)
+
+    with f1:
+        st.markdown("### 🧪 1. Calculateur d'Amendement N-P-K & pH")
+        with st.container(border=True):
+            st.write("Ajustez la nutrition de votre sol en fonction de vos analyses de laboratoire.")
+            
+            ph_actuel = st.slider("Niveau de pH actuel du sol", 4.5, 9.0, 6.2, step=0.1)
+            target_npk = st.radio("Objectif principal du sol :", ["Fort besoin en Feuillage (Azote N)", "Stimulation des Racines (Phosphore P)", "Maximisation des Fruits (Potassium K)"])
+            
+            # Algorithme de calcul d'amendement
+            if ph_actuel < 6.0:
+                conseil_ph = "⚠️ Sol acide. Apport recommandé : Chaux agricole ou dolomie (150g/m²)."
+            elif ph_actuel > 7.5:
+                conseil_ph = "⚠️ Sol alcalin. Apport recommandé : Soufre élémentaire ou matière organique acide (tourbe)."
+            else:
+                conseil_ph = "✅ pH optimal pour la majorité des cultures maraîchères."
+                
+            st.warning(conseil_ph)
+            st.info(f"**Préconisation Nutritionnelle :** Pour votre objectif '{target_npk}', appliquez un ratio adapté avec une base de compost organique complétée par un engrais ciblé à hauteur de 30g/m².")
+
+    with f2:
+        st.markdown("### 🌦️ 2. Planificateur Thermique des Semis")
+        with st.container(border=True):
+            st.write("Évitez les chocs thermiques en vérifiant la compatibilité de votre calendrier.")
+            
+            temp_sol = st.number_input("Température moyenne du sol mesurée (°C)", min_value=5, max_value=45, value=22)
+            periode_annee = st.selectbox("Saison de plantation prévue", ["Saison Sèche / Hivernage", "Saison des Pluies", "Inter-saison"])
+            
+            # Logique agronomique de validation
+            if temp_sol < 15:
+                st.error("🚨 Température trop basse. Risque élevé de dormance prolongée des graines ou de pourriture racinaire.")
+            elif 15 <= temp_sol <= 30:
+                st.success("🌱 Température idéale ! La vitesse de germination et la levée des plants seront maximales.")
+            else:
+                st.error("🔥 Risque de stress thermique. Prévoyez un ombrage partiel (ombrière 30%) et un paillage épais.")
+
+    # -----------------------------------------------------
+    # LIGNE 2 : BUSINESS & ROLEMENT (Fonctionnalités 3 & 4)
+    # -----------------------------------------------------
+    st.markdown("<br>", unsafe_allow_html=True)
+    f3, f4 = st.columns(2)
+
+    with f3:
+        st.markdown("### 📉 3. Optimiseur de Marge & Seuil de Rentabilité")
+        with st.container(border=True):
+            st.write("Évaluez la rentabilité financière brute avant de lancer vos cycles de culture.")
+            
+            cout_intrants = st.number_input("Coût estimé des intrants par m² (Eau, Semences, Engrais EN €/$)", value=1.5, step=0.1)
+            prix_marché = st.number_input("Prix de vente estimé au kilo (EN €/$)", value=float(data_cultures[culture_choisie]["prix_vente_kg"]), step=0.1)
+            
+            # Calculs financiers
+            charges_totales = surface * cout_intrants
+            chiffre_affaires = rendement_estime_kg * prix_marché
+            benefice_net = chiffre_affaires - charges_totales
+            
+            col_b1, col_b2 = st.columns(2)
+            col_b1.metric("Dépenses Totales", f"{charges_totales:,.2f} €")
+            
+            if benefice_net >= 0:
+                col_b2.metric("Bénéfice Prévisionnel", f"{benefice_net:,.2f} €", delta="Rentable")
+            else:
+                col_b2.metric("Bénéfice Prévisionnel", f"{benefice_net:,.2f} €", delta="Déficitaire", delta_color="inverse")
+
+    with f4:
+        st.markdown("### 🔄 4. Générateur d'Assolement & Rotation des Cultures")
+        with st.container(border=True):
+            st.write("Sélectionnez votre culture actuelle pour découvrir le meilleur cycle de rotation protecteur.")
+            
+            culture_precedente = st.selectbox("Culture actuellement en place (ou précédente) :", ["Solanacées (Tomates, Piments)", "Alliacées (Oignons, Ail)", "Légumineuses (Haricots, Pois)", "Crucifères (Choux, Navets)"])
+            
+            # Matrice de rotation
+            rotations = {
+                "Solanacées (Tomates, Piments)": "👉 **Légumineuses (Haricots/Pois)** pour fixer l'azote consommé par les tomates.",
+                "Alliacées (Oignons, Ail)": "👉 **Crucifères (Choux)** ou racines pour briser le cycle des nématodes du sol.",
+                "Légumineuses (Haricots, Pois)": "👉 **Feuilles / Gourmandes (Maïs, Salades)** pour profiter de la richesse en azote laissée dans le sol.",
+                "Crucifères (Choux, Navets)": "👉 **Alliacées (Oignons)** ou laissez reposer avec un engrais vert à enracinement profond."
+            }
+            
+            st.info(f"**Prochaine étape conseillée :**\n{rotations[culture_precedente]}")
+            st.caption("⚠️ Règle d'or : Attendez au moins 3 à 4 ans avant de replanter une culture de la même famille sur la même parcelle.")
+
+    # -----------------------------------------------------
+    # LIGNE 3 : ALERTES & TRACABILITÉ (Fonctionnalités 5 & 6)
+    # -----------------------------------------------------
+    st.markdown("<br>", unsafe_allow_html=True)
+    f5, f6 = st.columns(2)
+
+    with f5:
+        st.markdown("### ⚠️ 5. Indicateur de Stress Hydrique & Canicule")
+        with st.container(border=True):
+            st.write("Simulateur d'indice d'évapotranspiration combiné pour adapter vos volumes d'eau.")
+            
+            meteo_vent = st.checkbox("Présence de vents secs ou forts (ex: Harmattan / Sirocco)")
+            hygrometrie = st.slider("Taux d'humidité de l'air (%)", 10, 100, 55)
+            
+            # Calcul d'indice de risque
+            if hygrometrie < 35 and meteo_vent:
+                statut_stress = "🔴 CRITIQUE : Évapotranspiration extrême. Doublez la fréquence d'irrigation par petites sessions."
+            elif hygrometrie < 50 or meteo_vent:
+                statut_stress = "🟡 MODÉRÉ : Risque de flétrissement l'après-midi. Augmentez l'apport de 20% en fin de journée."
+            else:
+                statut_stress = "🟢 NORMAL : Équilibre hydrique stable. Restez sur vos plannings de base."
+                
+            st.write(f"**Diagnostic en temps réel :**")
+            st.code(statut_stress, language="text")
+
+    with f6:
+        st.markdown("### 📋 6. Générateur de Fiche de Traçabilité (Export)")
+        with st.container(border=True):
+            st.write("Préparez votre cahier de parcelle pour les certifications de qualité ou de vente.")
+            
+            num_lot = st.text_input("Numéro de Lot / Identifiant Parcelle", value="PARCELLE-A-01")
+            date_recolte = st.date_input("Date prévisionnelle de récolte")
+            label_bio = st.toggle("Pratiques 100% Organiques / Zéro Résidu")
+            
+            # Génération d'une chaîne texte simulant le rapport exportable
+            fiche_texte = f"""--- FICHE DE TRAÇABILITÉ EXPLOITATION ---
+• Identifiant : {num_lot}
+• Culture principale : {culture_choisie}
+• Surface exploitée : {surface} m2
+• Récolte estimée : {rendement_propre}
+• Fenêtre de coupe : {date_recolte}
+• Statut Éco-responsable : {'Certifié Organique' if label_bio else 'Standard'}
+-----------------------------------------"""
+            
+            st.download_button(
+                label="📥 Télécharger le Cahier de Parcelle (TXT)",
+                data=fiche_texte,
+                file_name=f"tracabilite_{num_lot}.txt",
+                mime="text/plain"
+            )
 
     # =====================================================
     # BANDEAU XXL : CELLULE CONSEIL ET SUIVI YAM
@@ -930,241 +1227,212 @@ elif selected == "Conseils":
     </div>
     """, unsafe_allow_html=True)
 # =====================================================
-# =====================================================
-# REALISATIONS (VERSION ULTIME MONDIALE XXXL)
+# REALISATIONS (VERSION INTERACTIVE ET STRATÉGIQUE)
 # =====================================================
 elif selected == "Réalisations":
+    
     # =========================
-    # 1. DESIGN & CSS CORPORATE ULTRA-PREMIUM
+    # 1. STYLE CSS COMPLÉMENTAIRE
     # =========================
     st.markdown("""
     <style>
-    /* ---- CONFIGURATION DE PAGE / TEXTES ---- */
-    .hero-title {
-        font-size: 3.8rem !important;
-        font-weight: 900 !important;
-        color: #1b5e20;
-        line-height: 1.1;
+    /* Cartes de projets épurées */
+    .project-card {
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         margin-bottom: 20px;
-        letter-spacing: -2px;
     }
-    
-    .hero-subtitle {
-        font-size: 1.4rem !important;
-        color: #4e5d4e;
-        max-width: 950px;
-        line-height: 1.7;
-        margin-bottom: 60px;
-    }
-
-    .section-headline {
-        font-size: 2.4rem !important;
-        font-weight: 800 !important;
-        color: #2e7d32;
-        margin-top: 60px;
-        margin-bottom: 40px;
-        position: relative;
-        padding-bottom: 15px;
-        letter-spacing: -0.5px;
-    }
-    
-    .section-headline::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 80px;
-        height: 5px;
-        background-color: #ffb300;
-        border-radius: 3px;
-    }
-
-    /* ---- GRID KPI PREMIUM (STRIP-DOWN TO 1 FOCUS) ---- */
-    .kpi-global-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        margin-bottom: 60px;
-    }
-
-    .kpi-premium-box {
-        width: 100%;
-        max-width: 500px;
-        background: linear-gradient(135deg, #ffffff, #f4f9f4);
-        border: 1px solid #e0ebd3;
-        border-radius: 24px;
-        padding: 45px 30px;
-        text-align: center;
-        border-bottom: 8px solid #2e7d32;
-        box-shadow: 0 20px 45px rgba(46, 125, 50, 0.06);
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    }
-
-    .kpi-premium-box:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 30px 60px rgba(46, 125, 50, 0.15);
-        border-color: #ffb300;
-    }
-
-    .kpi-premium-val {
-        font-size: 5rem !important; /* Taille XXXL pour un impact maximal */
-        font-weight: 950 !important;
+    .project-title {
         color: #1b5e20;
-        margin: 0;
-        line-height: 1;
-        white-space: nowrap;
-        letter-spacing: -2px;
-    }
-
-    .kpi-premium-lbl {
-        font-size: 1.1rem !important;
-        font-weight: 800;
-        color: #43a047;
-        margin-top: 20px !important;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-
-    /* ---- CARDS TEMOIGNAGES INTERNATIONAUX ---- */
-    .testimonial-global-card {
-        background: #ffffff;
-        border: 1px solid #eaeaea;
-        border-radius: 24px;
-        padding: 40px;
-        margin-bottom: 30px;
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.03);
-        position: relative;
-        transition: all 0.3s ease;
-    }
-    
-    .testimonial-global-card:hover {
-        box-shadow: 0 25px 50px rgba(46, 125, 50, 0.09);
-        border-color: #2e7d32;
-    }
-
-    /* Guillemet géant de style éditorial */
-    .testimonial-global-card::before {
-        content: "“";
-        position: absolute;
-        top: -15px;
-        right: 35px;
-        font-size: 10rem;
-        color: rgba(255, 179, 0, 0.14);
-        font-family: "Georgia", serif;
-    }
-
-    .client-profile-meta {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 25px;
-    }
-
-    /* Avatar stylisé en CSS pur */
-    .client-avatar-placeholder {
-        width: 55px;
-        height: 55px;
-        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #1b5e20;
-        font-weight: 800;
-        font-size: 1.3rem;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .client-title-block {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .client-main-name {
-        font-size: 1.4rem !important;
-        font-weight: 800;
-        color: #1b5e20;
-        margin: 0;
-    }
-
-    .client-badge-role {
-        align-self: flex-start;
-        font-size: 0.8rem !important;
         font-weight: 700;
-        color: #c48b00;
-        background: #fff8e1;
-        padding: 4px 14px;
-        border-radius: 30px;
-        margin-top: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
+        font-size: 1.3rem;
+        margin-bottom: 8px;
     }
-
-    .testimonial-quote-text {
-        font-size: 1.15rem !important;
-        color: #37474f;
-        line-height: 1.7;
+    .project-badge {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    /* Témoignage stylisé */
+    .testimonial-bubble {
+        background-color: #f9fbe7;
+        border-left: 5px solid #c0ca33;
+        padding: 15px 20px;
+        border-radius: 0 15px 15px 0;
+        margin-top: 15px;
         font-style: italic;
-        background: #fbfcfd;
-        padding: 22px;
-        border-left: 5px solid #ffb300;
-        border-radius: 0 20px 20px 0;
-        margin: 0;
     }
     </style>
     """, unsafe_allow_html=True)
 
     # =========================
-    # 2. HERO SECTION XXXL
+    # 2. EN-TÊTE
     # =========================
-    st.markdown('<h1 class="hero-title">🌱 Nos Réalisations & Impacts</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="hero-subtitle">YouAgronoMe déploie des standards technologiques et logistiques mondiaux pour catalyser l\'agriculture de demain. Nous transformons des données complexes en performances agricoles visibles et durables.</p>', unsafe_allow_html=True)
+    st.title("🌱 Nos Réalisations & Impacts")
+    st.markdown(
+        "Explorez la manière dont YouAgronoMe transforme l'agriculture sénégalaise "
+        "grâce à la data, une logistique optimisée et des partenariats durables."
+    )
+    st.write("---")
 
     # =========================
-    # 3. FOCUS STATISTIQUE UNIQUE (XXXL EFFECT)
+    # 3. PANORAMA DES CHIFFRES CLÉS (METRICS NATIVES)
     # =========================
-    st.markdown("""
-    <div class="kpi-global-container">
-        <div class="kpi-premium-box">
-            <p class="kpi-premium-val">98%</p>
-            <p class="kpi-premium-lbl">Taux de Satisfaction Global</p>
+    st.subheader("📊 Notre Impact Global en Chiffres")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric(label="🌾 Terres Accompagnées", value="1 250 Ha", delta="+15% vs 2025")
+    with col2:
+        st.metric(label="👥 Producteurs Partenaires", value="450+", delta="+42 nouveaux")
+    with col3:
+        st.metric(label="🍎 Tonnes Distribuées", value="3 800 T", delta="+12% cette année")
+    with col4:
+        st.metric(label="⭐ Satisfaction globale", value="98.4%", delta="+0.4%")
+
+    st.write("---")
+
+    # =========================
+    # 4. PORTFOLIO INTERACTIF (NOUVELLE FONCTIONNALITÉ)
+    # =========================
+    st.subheader("📂 Découvrez nos Projets Majeurs")
+    
+    # Utilisation de pills/segmented_control pour filtrer les projets en un clic
+    domaine = st.pills(
+        "Sélectionnez un domaine d'impact :",
+        options=["🌾 Agroécologie & Production", "🚚 Supply Chain & Logistique", "💻 Agritech & Données"],
+        default="🌾 Agroécologie & Production"
+    )
+
+    if domaine == "🌾 Agroécologie & Production":
+        c_left, c_right = st.columns([1, 2])
+        with c_left:
+            st.image("https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=600&q=80", caption="Irrigation intelligente")
+        with c_right:
+            st.markdown("""
+            <div class="project-card">
+                <span class="project-badge">SAINT-LOUIS</span>
+                <div class="project-title">Optimisation Hydrique & Goutte-à-Goutte</div>
+                <p>Déploiement de systèmes d'irrigation connectés de précision sur 150 hectares de cultures maraîchères dans la vallée du fleuve Sénégal.</p>
+                <ul>
+                    <li><b>Résultat :</b> Réduction de 30% de la consommation d'eau.</li>
+                    <li><b>Rendement :</b> Augmentation de +18% sur les récoltes de tomates et d'oignons.</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+    elif domaine == "🚚 Supply Chain & Logistique":
+        c_left, c_right = st.columns([1, 2])
+        with c_left:
+            st.image("https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80", caption="Logistique optimisée")
+        with c_right:
+            st.markdown("""
+            <div class="project-card">
+                <span class="project-badge">DAKAR & FLOUVE</span>
+                <div class="project-title">Le Corridor Express Fraîcheur</div>
+                <p>Mise en place d'une chaîne logistique réfrigérée reliant directement les groupements de producteurs de Saint-Louis aux marchés de gros de Dakar.</p>
+                <ul>
+                    <li><b>Zéro Gaspillage :</b> Division par 4 des pertes post-récolte (de 25% à moins de 6%).</li>
+                    <li><b>Rapidité :</b> Transport sécurisé en moins de 6 heures.</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+    elif domaine == "💻 Agritech & Données":
+        c_left, c_right = st.columns([1, 2])
+        with c_left:
+            st.image("https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80", caption="Technologie agricole")
+        with c_right:
+            st.markdown("""
+            <div class="project-card">
+                <span class="project-badge">TOUT LE SÉNÉGAL</span>
+                <div class="project-title">Plateforme Prédictive YouAgri</div>
+                <p>Application de suivi et d'aide à la décision basée sur les données météo et l'analyse des sols pour planifier les périodes optimales de semis.</p>
+                <ul>
+                    <li><b>Adoption :</b> Plus de 300 alertes SMS personnalisées envoyées chaque semaine aux agriculteurs.</li>
+                    <li><b>Efficacité :</b> Amélioration de 15% de la qualité des intrants utilisés.</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.write("---")
+
+    # =========================
+    # 5. SIMULATEUR D'IMPACT (INTERACTIF POUR ENGAGER L'UTILISATEUR)
+    # =========================
+    st.subheader("🧮 Simulez votre impact potentiel avec YouAgronoMe")
+    st.info("Ajustez les paramètres ci-dessous pour découvrir l'impact estimé de nos solutions sur votre exploitation.")
+    
+    col_sim1, col_sim2 = st.columns(2)
+    with col_sim1:
+        surface = st.slider("Quelle est la surface de votre exploitation (en Hectares) ?", 1, 100, 10)
+        culture = st.selectbox("Type de culture principale :", ["Tomates", "Oignons", "Riz", "Gombo / Autres maraîchers"])
+    
+    with col_sim2:
+        # Calculs fictifs cohérents avec nos chiffres
+        eau_economisee = surface * 350 # m3 estimés par Ha
+        gain_financier = surface * 245000 # FCFA estimés par Ha
+        
+        st.markdown(f"""
+        <div style="background-color: #f1f8e9; padding: 20px; border-radius: 12px; border: 1px solid #c8e6c9;">
+            <h4 style="color: #2e7d32; margin-top:0;">💡 Estimations d'impact pour {surface} Ha de {culture} :</h4>
+            <p>💧 <b>Économie d'eau potentielle :</b> {eau_economisee:,} m³/an</p>
+            <p>📈 <b>Gain de productivité net estimé :</b> +18% à +22%</p>
+            <p>💵 <b>Augmentation moyenne des revenus :</b> ~ {gain_financier:,} FCFA / an</p>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    st.markdown("<br><hr style='border: 0; height: 1px; background: #e0e0e0;'><br>", unsafe_allow_html=True)
+    st.write("---")
 
     # =========================
-    # 4. SECTION TÉMOIGNAGES CORPORATE
+    # 6. TÉMOIGNAGES FILTRABLES (NOUVELLE FONCTIONNALITÉ)
     # =========================
-    st.markdown('<h2 class="section-headline">🗣️ Parole à l\'Écosystème</h2>', unsafe_allow_html=True)
+    st.subheader("🗣️ Parole à l'Écosystème")
+    
+    profil_selectionne = st.radio(
+        "Filtrer les témoignages par profil :",
+        ["Tous", "👩‍🌾 Producteurs", "🏢 Clients / Acheteurs"],
+        horizontal=True
+    )
 
-    temoins = [
-        ("Awa Ndiaye", "Agricultrice", "Grâce aux débouchés de YouAgronoMe, mes produits frais trouvent preneur en un temps record. La chaîne de distribution est ultra performante et transparente."),
-        ("Aissatou Diallo", "Cliente Grand Compte", "Une régularité de qualité impressionnante et des grilles de prix très compétitives par rapport au marché classique. Nous sécurisons nos approvisionnements à long terme."),
-        ("Fatou Sow", "Commerçante", "Un service professionnel, rigoureux et surtout d'une fiabilité remarquable. C'est le partenaire stratégique idéal pour gérer la fluidité de nos stocks."),
-        ("Khady Diop", "Productrice Émérite", "L'interface simplifie absolument tout le parcours. En quelques clics, l'ensemble de ma récolte est planifié, sécurisé et vendu efficacement.")
+    temoignages_data = [
+        {"nom": "Awa Ndiaye", "role": "Producteurs", "desc": "Productrice à Saint-Louis", "texte": "Grâce aux débouchés de YouAgronoMe, mes produits frais trouvent preneur en un temps record. La chaîne de distribution est ultra performante et transparente."},
+        {"nom": "Khady Diop", "role": "Producteurs", "desc": "Maraîchère Émérite", "texte": "L'interface simplifie absolument tout le parcours. En quelques clics, l'ensemble de ma récolte est planifié, sécurisé et vendu efficacement."},
+        {"nom": "Aissatou Diallo", "role": "Clients / Acheteurs", "desc": "Responsable Centrale d'Achat", "texte": "Une régularité de qualité impressionnante et des grilles de prix très compétitives par rapport au marché classique. Nous sécurisons nos approvisionnements à long terme."},
+        {"nom": "Fatou Sow", "role": "Clients / Acheteurs", "desc": "Grossiste alimentaire", "texte": "Un service professionnel, rigoureux et surtout d'une fiabilité remarquable. C'est le partenaire stratégique idéal pour gérer la fluidité de nos stocks."}
     ]
 
-    # Dispatching parfait sur 2 colonnes larges
-    cols = st.columns(2)
+    # Filtrage de la liste
+    temoignages_filtres = [
+        t for t in temoignages_data 
+        if profil_selectionne == "Tous" or t["role"] in profil_selectionne
+    ]
 
-    for i, (nom, role, texte) in enumerate(temoins):
-        initiale = nom[0] if nom else "U"
-        
-        with cols[i % 2]:
+    # Affichage dynamique sur deux colonnes
+    t_cols = st.columns(2)
+    for index, t in enumerate(temoignages_filtres):
+        with t_cols[index % 2]:
             st.markdown(f"""
-            <div class="testimonial-global-card">
-                <div class="client-profile-meta">
-                    <div class="client-avatar-placeholder">{initiale}</div>
-                    <div class="client-title-block">
-                        <span class="client-main-name">{nom}</span>
-                        <span class="client-badge-role">{role}</span>
+            <div class="project-card">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 45px; height: 45px; border-radius: 50%; background-color:#2e7d32; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem;">
+                        {t['nom'][0]}
+                    </div>
+                    <div>
+                        <strong style="color: #1b5e20; font-size:1.1rem;">{t['nom']}</strong><br>
+                        <small style="color: #666;">{t['desc']}</small>
                     </div>
                 </div>
-                <blockquote class="testimonial-quote-text">
-                    "{texte}"
-                </blockquote>
+                <div class="testimonial-bubble">
+                    "{t['texte']}"
+                </div>
             </div>
             """, unsafe_allow_html=True)
 # CONTACT
@@ -1174,63 +1442,74 @@ import streamlit as st
 def html_block(code):
     st.markdown(code, unsafe_allow_html=True)
 
-
 if selected == "Contact":
-
-    # ================= CSS =================
-    html_block("""
-    <style>
-    .contact-card{
-        background:#fff;
-        padding:20px;
-        border-radius:12px;
-        border:1px solid #ddd;
-    }
-    .contact-title{
-        color:#2e7d32;
-        font-weight:bold;
-    }
-    </style>
-    """)
 
     # ================= HEADER =================
     html_block("""
-    <div style="text-align:center">
-        <h1>🤝 Contact</h1>
-        <p>Contactez YouAgronoMe</p>
+    <div style="text-align:center; margin-bottom: 20px;">
+        <h1>🤝 Contactez YouAgronoMe</h1>
+        <p>Une question, un partenariat ou besoin d'assistance ? Notre équipe vous répond.</p>
     </div>
     """)
 
-    # ================= COLUMNS =================
-    c1, c2 = st.columns(2)
-
+    # ================= NOUVELLE FONCTIONNALITÉ : CHIFFRES CLÉS & INFOS =================
+    # Utilisation des composants natifs Streamlit pour un rendu propre et moderne
+    c1, c2, c3 = st.columns(3)
     with c1:
-        html_block("""
-        <div class="contact-card">
-            <div class="contact-title">Infos</div>
-            📞 +221 33 969 48 83<br>
-            📧 isseyoume212@gmail.com<br>
-            📍 Saint-Louis
-        </div>
-        """)
-
+        st.metric(label="📞 Téléphone", value="777473170")
     with c2:
-        html_block("""
-        <div class="contact-card">
-            <div class="contact-title">Départements</div>
-            🤝 Partenariats<br>
-            🎓 Opérations<br>
-            🚜 Commercial
-        </div>
-        """)
+        st.metric(label="📍 Bureau Principal", value="Saint-Louis")
+    with c3:
+        st.metric(label="⏱ Temps de réponse", value="< 24h")
 
-    # ================= FORM =================
-    with st.form("contact"):
-        nom = st.text_input("Nom")
-        email = st.text_input("Email")
-        msg = st.text_area("Message")
+    st.write("---")
 
-        ok = st.form_submit_button("Envoyer")
+    # ================= COLUMNS (FORMULAIRE & FAQ) =================
+    col_form, col_FAQ = st.columns([3, 2])
 
-        if ok:
-            st.success("Message envoyé ✔")
+    with col_form:
+        st.subheader("📩 Envoyez-nous un message")
+        
+        # Formulaire amélioré avec de nouvelles fonctionnalités
+        with st.form("contact_form", clear_on_submit=True):
+            nom = st.text_input("Votre Nom complet *")
+            email = st.text_input("Votre Adresse Email *")
+            
+            # Nouvelle fonctionnalité : Cibler le bon département
+            departement = st.selectbox(
+                "À quel département s'adresse votre message ?",
+                ["🤝 Partenariats & Investissements", "🎓 Opérations & Formations", "🚜 Support Commercial", "❓ Autre demande"]
+            )
+            
+            msg = st.text_area("Votre Message *", placeholder="Écrivez votre message ici...")
+
+            submit_button = st.form_submit_button("Envoyer le message")
+
+            # Nouvelle fonctionnalité : Validation des champs obligatoire
+            if submit_button:
+                if not nom or not email or not msg:
+                    st.error("Veuillez remplir tous les champs obligatoires (marqués par un *).")
+                elif "@" not in email:
+                    st.error("Veuillez entrer une adresse email valide.")
+                else:
+                    # Ici, vous pourrez ajouter votre logique d'envoi d'email ou de stockage en base de données
+                    st.success(f"Merci {nom} ! Votre message a bien été transmis au département **{departement}**. Nous vous recontacterons à l'adresse {email}.")
+
+    with col_FAQ:
+        st.subheader("💡 Informations utiles")
+        
+        # Nouvelle fonctionnalité : FAQ interactive pour désengorger le support
+        with st.expander("💼 Vous êtes un potentiel partenaire ?"):
+            st.write("""
+            Sélectionnez le département **Partenariats** dans le formulaire. 
+            Notre équipe dédiée aux alliances stratégiques vous répondra sous 48 heures ouvrées.
+            """)
+            
+        with st.expander("🚜 Support technique & Commercial"):
+            st.write("""
+            Pour toute urgence liée à vos commandes ou au déploiement sur le terrain à Saint-Louis, 
+            privilégiez l'appel direct au **+221 777473170** du lundi au vendredi (8h - 17h).
+            """)
+            
+        # Rappel de l'email direct en dehors du formulaire
+        st.info("✉️ **Email direct :** issayoume2012@gmail.com")
