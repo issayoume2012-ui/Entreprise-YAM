@@ -868,12 +868,10 @@ elif selected == "Commande":
                         use_container_width=True
                     )
 # =====================================================
-# =====================================================
-# ALLIANCES ET CO-CONSTRUCTION INSTITUTIONNELLE (NOUVELLE VERSION)
-# =====================================================
 elif selected == "Réalisations":
-    
-    # Style CSS épuré et professionnel
+    import urllib.parse
+
+    # Style CSS épuré, professionnel et moderne
     st.markdown("""
     <style>
     .concept-card {
@@ -881,210 +879,306 @@ elif selected == "Réalisations":
         border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         margin-bottom: 20px;
+        transition: transform 0.2s ease;
+    }
+    .concept-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.04);
     }
     .concept-title {
         color: #1b5e20;
         font-weight: 700;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         margin-bottom: 8px;
     }
     .gov-badge {
-        background-color: #e3f2fd;
-        color: #0d47a1;
-        padding: 4px 12px;
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        padding: 6px 14px;
         border-radius: 20px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: bold;
         display: inline-block;
         margin-bottom: 12px;
+        border: 1px solid #c8e6c9;
     }
-    .proposal-box {
-        background-color: #f1f8e9;
-        border-left: 5px solid #2e7d32;
-        padding: 20px;
+    .study-box {
+        background-color: #f7fafc;
+        border-left: 5px solid #2b6cb0;
+        padding: 25px;
         border-radius: 4px 16px 16px 4px;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        margin-top: 15px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .metric-title {
+        font-size: 0.85rem;
+        color: #4a5568;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    .metric-value {
+        font-size: 1.5rem;
+        color: #2b6cb0;
+        font-weight: 800;
     }
     </style>
     """, unsafe_allow_html=True)
 
-    # =========================
-    # 1. EN-TÊTE DE LA JEUNE POUSSE
-    # =========================
-    st.title("🏛️ Hub National d'Innovation & Alliances")
+    # =====================================================
+    # 1. EN-TÊTE ET POSITIONNEMENT
+    # =====================================================
+    st.title("🏛️ Hub d'Innovation & Études de Conception")
     st.markdown(
-        "**YouAgronoMe** est une jeune entreprise agritech sénégalaise en pleine émergence. "
-        "Notre mission est de servir de **bras technologique** pour les agences, directions et ministères du Sénégal "
-        "afin d'accélérer la souveraineté alimentaire nationale par l'IA et la logistique de précision."
+        "**YouAgronoMe** n'est pas un simple fournisseur, c'est un **bureau d'études et d'exécution technologique** "
+        "dédié à la souveraineté alimentaire du Sénégal. Nous concevons des architectures d'irrigation intelligente, "
+        "de suivi parcellaire par capteurs et de logistique intégrée adaptées aux réalités de nos terroirs."
     )
     st.write("---")
 
-    # =========================
-    # 2. NOS CHANTIERS CO-CONSTRUITS (NOTRE VISION EN ACTION)
-    # =========================
-    st.subheader("💡 Nos Piliers de Co-Développement")
-    st.markdown("Découvrez comment nous traduisons les objectifs de l'État en solutions concrètes sur le terrain :")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("""
-        <div class="concept-card">
-            <span class="gov-badge">🇸🇳 MINISTÈRE DE L'AGRICULTURE (MASAE)</span>
-            <div class="concept-title">Data-Souveraineté & Cartographie par IA</div>
-            <p style="font-size: 0.9rem; color: #555;">
-                Optimisation de la distribution des semences et engrais. En utilisant nos algorithmes de prédiction météo et d'analyse des sols, nous aidons à cibler les zones prioritaires pour maximiser les rendements nationaux.
-            </p>
-            <small style="color: #2e7d32; font-weight: bold;">🎯 Objectif : Réduction du gaspillage d'intrants</small>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div class="concept-card">
-            <span class="gov-badge">🇸🇳 ANIDA / ANCAR</span>
-            <div class="concept-title">Modernisation des DAC (Domaines Agricoles Communautaires)</div>
-            <p style="font-size: 0.9rem; color: #555;">
-                Introduction de nos micro-systèmes d'irrigation intelligente et de capteurs IoT low-cost pour transformer les exploitations des jeunes ruraux en fermes intelligentes et résilientes.
-            </p>
-            <small style="color: #2e7d32; font-weight: bold;">🎯 Objectif : Fixer les jeunes dans leurs terroirs</small>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("""
-        <div class="concept-card">
-            <span class="gov-badge">🇸🇳 DER/FJ & PROGRAMMES JEUNES</span>
-            <div class="concept-title">Agri-Logistique Urbain-Rural Sécurisée</div>
-            <p style="font-size: 0.9rem; color: #555;">
-                Mise à disposition de notre plateforme e-panier et de notre réseau d'acheminement régional pour désenclaver les micro-producteurs financés par l'État et leur garantir un accès direct aux marchés urbains.
-            </p>
-            <small style="color: #2e7d32; font-weight: bold;">🎯 Objectif : Rentabilité immédiate des financements publics</small>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        <div class="concept-card">
-            <span class="gov-badge">🇸🇳 SENELEC / DIRECTION DU NUMÉRIQUE</span>
-            <div class="concept-title">Agritech Verte & Bas Carbone</div>
-            <p style="font-size: 0.9rem; color: #555;">
-                Couplage de notre technologie de suivi parcellaire avec les initiatives de transition énergétique pour réduire la facture d'électricité liée au pompage agricole à grande échelle.
-            </p>
-            <small style="color: #2e7d32; font-weight: bold;">🎯 Objectif : Agriculture à faible empreinte carbone</small>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.write("---")
+    # Organisation de la section en deux onglets : Projets phares et Bureau d'études interactif
+    tab1, tab2 = st.tabs(["📋 Références & Projets Phares", "⚙️ Bureau d'Études & Conception Interactive"])
 
     # =====================================================
-    # 3. INTERACTIF : SYNERGIE IA & PROTOCOLES D'ACCORD (MOU)
+    # ONGLET 1 : RÉFÉRENCES ET PROJETS
     # =====================================================
-    st.subheader("🤖 Concepteur d'Alliances Stratégiques (IA)")
-    st.markdown(
-        "**Agent public ou décideur étatique ?** Sélectionnez votre département et vos priorités "
-        "pour que notre IA structure instantanément un projet de collaboration opérationnelle prêt à être examiné."
-    )
+    with tab1:
+        st.subheader("💡 Nos Projets d'Intégration Territoriale")
+        st.markdown("Découvrez le déploiement opérationnel de nos solutions face aux défis structurels du pays :")
 
-    # Formulaire de ciblage
-    col_gov, col_opt = st.columns(2)
-    
-    with col_gov:
-        structure = st.selectbox(
-            "Sélectionnez votre Structure / Agence :",
-            [
-                "Ministère de l'Agriculture, de la Souveraineté Alimentaire et de l'Élevage (MASAE)",
-                "Agence Nationale d'Insertion et de Développement Agricole (ANIDA)",
-                "Agence Nationale de Conseil Agricole et Rural (ANCAR)",
-                "Délégation Générale à l'Entrepreneuriat Rapide des Femmes et des Jeunes (DER/FJ)",
-                "Fonds de Financement de la Formation Professionnelle (3FPT)"
-            ]
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("""
+            <div class="concept-card">
+                <span class="gov-badge">🇸🇳 VALLÉE DU FLEUVE (SAED)</span>
+                <div class="concept-title">Pilotage de la Filière Rizicole</div>
+                <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5;">
+                    Déploiement de sondes tensiométriques connectées dans les aménagements hydro-agricoles de Podor et Dagana. 
+                    Optimisation des cycles d'irrigation pour faire face aux variations de débit du Fleuve Sénégal.
+                </p>
+                <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
+                <small style="color: #2e7d32; font-weight: bold;">🎯 Impact : Réduction de 30% des frais énergétiques de pompage</small>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("""
+            <div class="concept-card">
+                <span class="gov-badge">🇸🇳 DOMAINES AGRICOLES (ANIDA)</span>
+                <div class="concept-title">Modernisation des DAC</div>
+                <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5;">
+                    Installation de micro-stations météo et IoT dans les incubateurs agricoles de Keur Momar Sarr pour sécuriser 
+                    les cultures de contre-saison des jeunes exploitants ruraux.
+                </p>
+                <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
+                <small style="color: #2e7d32; font-weight: bold;">🎯 Impact : +22% de rendement sur la pomme de terre et l'oignon</small>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with col2:
+            st.markdown("""
+            <div class="concept-card">
+                <span class="gov-badge">🇸🇳 ZONE DES NIAYES</span>
+                <div class="concept-title">Corridor Horticole de Précision</div>
+                <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5;">
+                    Planification des flux logistiques via notre plateforme de groupage depuis les Niayes (Thiès/Louga) 
+                    vers Dakar pour stabiliser les prix du marché et réduire le gaspillage.
+                </p>
+                <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
+                <small style="color: #2e7d32; font-weight: bold;">🎯 Impact : Division par 2 des pertes post-récolte horticoles</small>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("""
+            <div class="concept-card">
+                <span class="gov-badge">🇸🇳 BASSIN ARACHIDIER & DER/FJ</span>
+                <div class="concept-title">Cartographie Prédictive des Sols</div>
+                <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5;">
+                    Analyse prédictive des sols sablonneux du bassin (Kaolack, Kaffrine) pour orienter la répartition des semences certifiées et des engrais subventionnés.
+                </p>
+                <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
+                <small style="color: #2e7d32; font-weight: bold;">🎯 Impact : Optimisation de la fertilisation azotée sur 1500 ha</small>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # =====================================================
+    # ONGLET 2 : BUREAU D'ÉTUDES & DIAGNOSTIC INTERACTIF (QUESTIONS & CONCEPTION)
+    # =====================================================
+    with tab2:
+        st.subheader("🛠️ Formulaire de Diagnostic & Conception de Projet")
+        st.markdown(
+            "Répondez aux questions ci-dessous concernant votre périmètre agricole ou votre programme régional. "
+            "Notre moteur analytique va concevoir instantanément **une note d'étude préliminaire** personnalisée."
         )
-        
-        defi_majeur = st.selectbox(
-            "Votre défi prioritaire sur le terrain :",
-            [
-                "Maîtrise de l'eau et irrigation solaire économique",
-                "Désenclavement commercial et réduction des pertes de transport",
-                "Digitalisation des données parcellaires des petits exploitants",
-                "Insertion et viabilité économique des groupements de femmes/jeunes",
-                "Formation des producteurs aux technologies agritech"
-            ]
-        )
 
-    with col_opt:
-        localite_cible = st.text_input("Région/Zone pilote d'intervention :", placeholder="Ex: Vallée du Fleuve, Niayes, Casamance, Bassin Arachidier")
-        budget_approche = st.selectbox("Mécanisme de mise en œuvre souhaité :", ["Co-financement public/privé", "Appui technique sans coût pour l'État", "Projet pilote d'incubation"])
+        with st.form("diagnostic_form"):
+            st.markdown("##### 📍 1. Localisation et Dimensionnement")
+            col_z, col_s = st.columns(2)
+            with col_z:
+                bassin_geo = st.selectbox(
+                    "Sélectionnez le bassin géographique :",
+                    [
+                        "Vallée du Fleuve Sénégal (Riz & Cultures irriguées)",
+                        "Zone des Niayes (Maraîchage & Arboriculture intensive)",
+                        "Bassin Arachidier (Grandes cultures pluviales & Maraîchage d'appoint)",
+                        "Casamance (Mangues, Riziculture pluviale & Arboriculture)"
+                    ]
+                )
+            with col_s:
+                surface_projet = st.number_input("Superficie totale à aménager (en Hectares) :", min_value=1, max_value=10000, value=25, step=5)
 
-    # Action IA
-    generer_mou = st.button("⚡ Structurer le Projet Pilote par l'IA", use_container_width=True, type="primary")
+            st.markdown("---")
+            st.markdown("##### 💧 2. Ressources en Eau & Infrastructure")
+            col_e, col_ir = st.columns(2)
+            with col_e:
+                source_energie = st.selectbox(
+                    "Quelle est la source d'énergie principale pour l'exhaure de l'eau ?",
+                    [
+                        "Gasoil (Motopompes thermiques - coût élevé)",
+                        "Solaire PV (Pompage solaire existant ou à concevoir)",
+                        "Réseau SENELEC (Électricité réseau)",
+                        "Pas d'infrastructure de pompage (Pluvial strict)"
+                    ]
+                )
+            with col_ir:
+                type_irrigation = st.selectbox(
+                    "Quel est le système d'irrigation principal ?",
+                    [
+                        "Irrigation gravitaire (canaux à ciel ouvert)",
+                        "Aspersion (canons ou asperseurs)",
+                        "Goutte-à-goutte (micro-irrigation localisée)",
+                        "Arrosage manuel / Système traditionnel"
+                    ]
+                )
 
-    if generer_mou:
-        if not localite_cible:
-            st.error("⚠️ Veuillez spécifier une région ou zone pilote pour adapter l'algorithme.")
-        else:
-            with st.spinner("Analyse des directives ministérielles et génération du document..."):
-                sigle_structure = structure.split("(")[-1].replace(")", "") if "(" in structure else "l'État"
+            st.markdown("---")
+            st.markdown("##### 🌾 3. Filières, Sols & Logistique")
+            col_sol, col_perte = st.columns(2)
+            with col_sol:
+                type_sol = st.selectbox(
+                    "Quel est le profil dominant de votre sol ?",
+                    [
+                        "Sol argileux / lourd (ex: Sols du Fleuve 'Faux-Holaldé')",
+                        "Sol sableux / filtrant (ex: Sols des Niayes ou Dior)",
+                        "Sol limoneux-sableux (Deck-Dior équilibré)"
+                    ]
+                )
+            with col_perte:
+                niveau_perte = st.select_slider(
+                    "Quel est le niveau estimé de vos pertes post-récolte actuelles ?",
+                    options=["Faible (<10%)", "Modéré (10% à 25%)", "Élevé (25% à 45% - Cas de la mangue/oignon)", "Critique (>45%)"],
+                    value="Élevé (25% à 45% - Cas de la mangue/oignon)"
+                )
+
+            submit_diagnose = st.form_submit_button("🧪 Lancer la Modélisation & Générer l'Étude de Conception", use_container_width=True)
+
+        if submit_diagnose:
+            with st.spinner("Analyse des variables agro-climatiques et dimensionnement de l'architecture..."):
                 
-                # Génération du plan de projet structuré et percutant
-                projet_mou = f"""
-📋 PROJET DE COLLABORATION STRATÉGIQUE (MOU)
-=====================================================
-PARTIES : YouAgronoMe Sénégal  x  {structure}
-CADRE D’INTERVENTION : Zone pilote de {localite_cible}
-=====================================================
+                # Modèle de calcul des besoins technologiques YouAgronoMe
+                nb_capteurs_recom = max(3, int(surface_projet / 5)) # 1 capteur par 5ha, min 3
+                
+                # Économies d'eau estimées (m3/an)
+                coef_economie = 0.35 if type_irrigation != "Goutte-à-goutte" else 0.15
+                besoin_eau_standard = surface_projet * 7500 # m3 moyen/ha/an
+                eau_economisee = int(besoin_eau_standard * coef_economie)
+                
+                # Économies financières sur l'énergie (FCFA/an)
+                if "Gasoil" in source_energie:
+                    gain_energie_annuel = int(surface_projet * 180000) # 180.000 FCFA d'économie par ha avec l'irrigation de précision
+                    facteur_carbone = "Très élevé (Haute priorité de transition verte)"
+                elif "Solaire" in source_energie:
+                    gain_energie_annuel = int(surface_projet * 45000) # Moins de maintenance batterie/pompe
+                    facteur_carbone = "Neutre (Excellente empreinte écologique)"
+                else:
+                    gain_energie_annuel = int(surface_projet * 95000)
+                    facteur_carbone = "Modéré"
 
-1. OBJECTIF DE L'ALLIANCE :
-Intégrer les solutions agritech de YouAgronoMe pour répondre au défi national :
-" {defi_majeur} ".
+                # Estimation de la rentabilité logistique
+                if "Niayes" in bassin_geo or "Casamance" in bassin_geo:
+                    gain_logistique = "Optimisation du transport froid et groupage : réduction de 60% des invendus."
+                    gain_financier_recolte = int(surface_projet * 400000) # Gain en valeur FCFA marchande récupérée
+                else:
+                    gain_logistique = "Planification des fenêtres de récolte pour le stockage et la commercialisation directe."
+                    gain_financier_recolte = int(surface_projet * 250000)
 
-2. RÉPARTITION DES RÔLES :
-👉 Pour {sigle_structure} : 
-   - Facilitation de l'accès aux données de terrain et identification des groupements bénéficiaires.
-   - Intégration du projet pilote dans les agendas régionaux de développement.
-👉 Pour YouAgronoMe :
-   - Déploiement de notre plateforme de suivi assistée par IA pour optimiser les décisions de culture.
-   - Garantie d'achat/transit logistique des récoltes produites via notre e-panier intelligent.
+                st.success("✨ Note de conception préliminaire générée avec succès !")
 
-3. OUTCOMES ATTENDUS (PILOTE 6 MOIS) :
-   - Digitalisation de 100% des producteurs impliqués dans la zone.
-   - Baisse de 25% des pertes post-récolte sur l'axe {localite_cible} -> Dakar.
-   - Rapports d'analyse de rendement générés automatiquement par notre IA pour vos services de statistiques.
+                # Section des indicateurs clés
+                m1, m2, m3 = st.columns(3)
+                with m1:
+                    st.markdown(f'<div class="concept-card"><span class="metric-title">Capteurs IoT requis</span><br><span class="metric-value">{nb_capteurs_recom} Unités</span></div>', unsafe_allow_html=True)
+                with m2:
+                    st.markdown(f'<div class="concept-card"><span class="metric-title">Volume d\'Eau Préservé</span><br><span class="metric-value">{eau_economisee:,} m³/an</span></div>', unsafe_allow_html=True)
+                with m3:
+                    st.markdown(f'<div class="concept-card"><span class="metric-title">Économies Énergie</span><br><span class="metric-value">{gain_energie_annuel:,} FCFA/an</span></div>', unsafe_allow_html=True)
 
-4. MODE DE FINANCEMENT :
-   - Approche : {budget_approche}
+                # Rapport d'étude mis en forme
+                etude_content = f"""📝 ÉTUDE DE CONCEPTION PRÉLIMINAIRE : ARCHITECTURE YOUAGRONOME
+=====================================================================
+BASSIN D'INTERVENTION : {bassin_geo}
+DIMENSIONNEMENT       : {surface_projet} Hectares
+PROFIL TECHNIQUE      : Énergie: {source_energie} | Irrigation: {type_irrigation}
+=====================================================================
+
+1. DIAGNOSTIC AGRO-TECHNIQUE & RECOMMANDATIONS
+---------------------------------------------------------------------
+* Type de Sol identifié : {type_sol}. 
+  -> Recommandation : Ajuster les seuils d'alertes tensiométriques dans l'application mobile pour éviter l'asphyxie racinaire (sols lourds) ou le lessivage rapide (sols filtrants).
+* Densité du réseau IoT : Déploiement de {nb_capteurs_recom} sondes connectées de profondeur double (30cm / 60cm) pour un suivi précis du front d'humectation.
+
+2. TRANSITION ÉNERGÉTIQUE & RENTABILITÉ IRRIGATION
+---------------------------------------------------------------------
+* Bilan Carbone Actuel : {facteur_carbone}.
+* Économie de carburant/électricité estimée : {gain_energie_annuel:,} FCFA par an grâce à l'arrêt automatique des pompes dès que la capacité de rétention du sol est atteinte.
+* Réduction des pertes en eau douce : {eau_economisee:,} m3 préservés par an, prolongeant la disponibilité de la ressource en nappe.
+
+3. STRATÉGIE LOGISTIQUE & VALORISATION DES RÉCOLTES
+---------------------------------------------------------------------
+* Diagnostic des Pertes : Actuellement évalué à "{niveau_perte}".
+* Solution Logistique : {gain_logistique}
+* Gain de chiffre d'affaires agricole estimé : +{gain_financier_recolte:,} FCFA / an sur le périmètre grâce à la valorisation des volumes sauvés de la pourriture.
+
+4. CALENDRIER DE DÉPLOIEMENT ESTIMÉ (PILOTE DE 90 JOURS)
+---------------------------------------------------------------------
+* Semaines 1-2 : Cartographie GPS et prélèvements de sols pour calibrage.
+* Semaine 3   : Installation physique de la passerelle de communication et des sondes.
+* Semaines 4+ : Activation du tableau de bord d'irrigation et formation des exploitants.
 """
-                st.success("✨ Proposition d'alliance générée avec succès !")
-                st.markdown(f"<div class='proposal-box'><pre style='white-space: pre-wrap;'>{projet_mou}</pre></div>", unsafe_allow_html=True)
-                
-                # Oublions les formulaires complexes : on lance une communication directe par mail
-                sujet_mail = urllib.parse.quote(f"Proposition d'Alliance Technologique : YouAgronoMe & {sigle_structure}")
-                corps_mail = urllib.parse.quote(f"Bonjour,\n\nEn tant que jeune entreprise innovante du Sénégal, nous avons le plaisir de vous soumettre notre concept d'intégration technologique pour relever le défi suivant : {defi_majeur}.\n\nVous trouverez notre ébauche de projet pilote en pièce jointe.\n\nRestant à votre disposition,\nL'équipe de direction YouAgronoMe.")
-                
+
+                st.markdown(f"<div class='study-box'><pre style='white-space: pre-wrap; font-family: monospace; font-size: 0.9rem; color: #2d3748;'>{etude_content}</pre></div>", unsafe_allow_html=True)
+
+                # Formulaire d'envoi automatique pour l'étude
+                sujet_mail = urllib.parse.quote(f"Demande d'Étude de Faisabilité YouAgronoMe : {surface_projet}ha - {bassin_geo.split('(')[0]}")
+                corps_mail = urllib.parse.quote(
+                    f"Bonjour l'équipe YouAgronoMe,\n\nNous venons de concevoir notre note d'étude préliminaire sur votre plateforme pour un projet de {surface_projet} hectares situé dans le bassin : {bassin_geo}.\n\nVoici nos spécifications de départ :\n- Énergie d'exhaure : {source_energie}\n- Type d'irrigation : {type_irrigation}\n- Type de sol : {type_sol}\n- Niveau de perte actuel : {niveau_perte}\n\nNous souhaitons planifier un rendez-vous ou une visite de terrain pour valider l'étude d'exécution technique.\n\nCordialement,\n[Indiquez votre Nom / Structure]"
+                )
+
+                st.write(" ")
                 st.link_button(
-                    "✉️ Envoyer cette proposition au Cabinet de Direction", 
-                    f"mailto:cabinet@youagronome.com?subject={sujet_mail}&body={corps_mail}",
+                    "✉️ Soumettre cette étude de conception pour validation technique terrain", 
+                    f"mailto:issayoume2012@gmail.com?subject={sujet_mail}&body={corps_mail}",
                     use_container_width=True
                 )
 
     st.write("---")
 
     # =====================================================
-    # 4. REJOINDRE NOTRE ÉCOSYSTÈME
+    # 5. REJOINDRE NOTRE ÉCOSYSTÈME
     # =====================================================
-    st.subheader("🤝 Rejoignez la dynamique")
+    st.subheader("🤝 Une équipe mobile à votre service")
     st.markdown(
-        "Vous êtes un représentant d'une collectivité locale ou d'un service déconcentré de l'État ? "
-        "Notre équipe est mobile et prête à venir faire une démonstration de notre plateforme au sein de vos bureaux de développement régionaux."
+        "Nos techniciens et ingénieurs agronomes sillonnent le Sénégal pour calibrer nos équipements "
+        "directement sur vos parcelles. Contactez-nous pour transformer cette étude virtuelle en réalité physique."
     )
     
     col_c1, col_c2 = st.columns(2)
     with col_c1:
-        st.info("📞 **Ligne Directe Partenariats :** +221 77 747 31 70")
+        st.info("📞 **Ligne Directe Bureau d'Études :** +221 77 747 31 70")
     with col_c2:
         st.info("✉️ **Courriel Officiel :** issayoume2012@gmail.com")
-# =====================================================
 # CONTACT & ALLIANCE NATIONALE (VERSION STARTUP IA)
 # =====================================================
 # =====================================================
