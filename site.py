@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import urllib.parse
+import base64
 from datetime import datetime, timedelta  #=====================================================
 # CONFIG (Exécuté une seule fois, au tout début)
 # =====================================================
@@ -321,9 +322,217 @@ div[data-testid="stColumn"] > div {
 </style>
 """, unsafe_allow_html=True)
 
+
+# =====================================================
+# ADMINISTRATION — PARAMÈTRES EN SIDEBAR
+# =====================================================
+ADMIN_LOGIN = "iy@2012"
+ADMIN_PASSWORD = "issayoume2026"
+
+DEFAULT_PRODUCTS = [
+    {"image":"to.jpg","nom":"Tomates fraîches","prix":3500,"conditionnement":"Sac de 5Kg","cat":"Fruits & Légumes","tag":"🔥 Prix Producteur","origine":"Niayes","dispo":True,"vedette":True},
+    {"image":"fr.jpg","nom":"Fraises locales","prix":5000,"conditionnement":"Sachet de 2Kg","cat":"Fruits & Légumes","tag":"✨ Spécialité","origine":"Thiès (Mboro)","dispo":True,"vedette":True},
+    {"image":"og.jpg","nom":"Oignons rouges","prix":2500,"conditionnement":"Sac de 5Kg","cat":"Fruits & Légumes","tag":"","origine":"Vallée du Fleuve","dispo":True,"vedette":False},
+    {"image":"cr.jpg","nom":"Carottes lavées","prix":3000,"conditionnement":"Sac de 5Kg","cat":"Fruits & Légumes","tag":"","origine":"Zone des Niayes","dispo":True,"vedette":False},
+    {"image":"pm.jpg","nom":"Piments Verts / Rouges","prix":2000,"conditionnement":"Sac de 3Kg","cat":"Fruits & Légumes","tag":"⚡ Récolte fraîche","origine":"Louga","dispo":True,"vedette":False},
+    {"image":"cc.jpg","nom":"Concombres","prix":2800,"conditionnement":"Sac de 3Kg","cat":"Fruits & Légumes","tag":"","origine":"Zone des Niayes","dispo":True,"vedette":False},
+    {"image":"pt.jpg","nom":"Pommes de terre local","prix":4500,"conditionnement":"Sachet de 5Kg","cat":"Fruits & Légumes","tag":"","origine":"Vallée du Fleuve","dispo":True,"vedette":False},
+    {"image":"or.jpg","nom":"Oranges douces","prix":4000,"conditionnement":"Sac de 3Kg","cat":"Fruits & Légumes","tag":"","origine":"Casamance","dispo":True,"vedette":False},
+    {"image":"mangue.jpg","nom":"Mangues Kent","prix":3500,"conditionnement":"Panier de 5Kg","cat":"Fruits & Légumes","tag":"🥭 Saison","origine":"Pout / Niayes","dispo":True,"vedette":True},
+    {"image":"banane.jpg","nom":"Bananes douces","prix":2500,"conditionnement":"Régime (~4-5kg)","cat":"Fruits & Légumes","tag":"","origine":"Tambacounda","dispo":True,"vedette":False},
+    {"image":"mais.jpg","nom":"Maïs grain jaune","prix":7000,"conditionnement":"Sac de 25Kg","cat":"Céréales & Graines","tag":"","origine":"Bassin Arachidier","dispo":True,"vedette":False},
+    {"image":"arachide.jpg","nom":"Arachides décortiquées","prix":8500,"conditionnement":"Sac de 10Kg","cat":"Céréales & Graines","tag":"","origine":"Kaolack","dispo":True,"vedette":False},
+    {"image":"riz.jpg","nom":"Riz local brisé","prix":12000,"conditionnement":"Sac de 25Kg","cat":"Céréales & Graines","tag":"⭐ Souveraineté","origine":"Vallée du Fleuve (Podor)","dispo":True,"vedette":True},
+    {"image":"mil.jpg","nom":"Mil Souna","prix":9000,"conditionnement":"Sac de 20Kg","cat":"Céréales & Graines","tag":"","origine":"Région de Fatick","dispo":True,"vedette":False},
+    {"image":"pasteque.jpg","nom":"Pastèques","prix":6000,"conditionnement":"Gros calibre (L'unité)","cat":"Fruits & Légumes","tag":"","origine":"Kaffrine","dispo":True,"vedette":False},
+    {"image":"citron.jpg","nom":"Citrons verts","prix":2000,"conditionnement":"Filet de 2.5kg","cat":"Fruits & Légumes","tag":"","origine":"Thiès","dispo":True,"vedette":False},
+    {"image":"niebe.jpg","nom":"Niébé (Haricot)","prix":6500,"conditionnement":"Sac de 10Kg","cat":"Céréales & Graines","tag":"","origine":"Louga (Kébémer)","dispo":True,"vedette":False},
+    {"image":"gombo.jpg","nom":"Gombos frais","prix":2200,"conditionnement":"Panier de 3Kg","cat":"Fruits & Légumes","tag":"","origine":"Faye (Saint-Louis)","dispo":True,"vedette":False},
+    {"image":"bissap.jpg","nom":"Bissap Rouge (Fleurs)","prix":3000,"conditionnement":"Sachet de 2Kg","cat":"Céréales & Graines","tag":"🌺 Qualité Supérieure","origine":"Kaolack","dispo":True,"vedette":False},
+    {"image":"sesame.jpg","nom":"Graines de sésame","prix":7500,"conditionnement":"Sac de 10Kg","cat":"Céréales & Graines","tag":"","origine":"Sédhiou","dispo":True,"vedette":False},
+]
+
+if "admin_connecte" not in st.session_state:
+    st.session_state.admin_connecte = False
+if "admin_page" not in st.session_state:
+    st.session_state.admin_page = None
+if "produits_admin" not in st.session_state:
+    st.session_state.produits_admin = DEFAULT_PRODUCTS.copy()
+
+def image_source(produit):
+    """Retourne la source image d'un produit : upload en mémoire ou fichier existant."""
+    if produit.get("photo_bytes"):
+        return produit["photo_bytes"]
+    return produit.get("image", "")
+
+with st.sidebar:
+    st.markdown("## ⚙️ Paramètres")
+    st.caption("Espace réservé à l'administration du catalogue et des commandes.")
+
+    if not st.session_state.admin_connecte:
+        with st.form("admin_login_form"):
+            login_admin = st.text_input("Identifiant", placeholder="Identifiant administrateur")
+            mdp_admin = st.text_input("Mot de passe", type="password", placeholder="Mot de passe")
+            connexion = st.form_submit_button("🔐 Se connecter", use_container_width=True)
+            if connexion:
+                if login_admin == ADMIN_LOGIN and mdp_admin == ADMIN_PASSWORD:
+                    st.session_state.admin_connecte = True
+                    st.session_state.admin_page = "Produits"
+                    st.rerun()
+                else:
+                    st.error("Identifiant ou mot de passe incorrect.")
+    else:
+        st.success("🟢 Administrateur connecté")
+        st.caption("Vous pouvez modifier le catalogue sans rendre ces commandes visibles aux clients.")
+
+        admin_page = st.radio(
+            "Gestion",
+            ["Produits", "Commandes"],
+            index=0 if st.session_state.admin_page != "Commandes" else 1,
+            key="admin_navigation"
+        )
+        st.session_state.admin_page = admin_page
+
+        if st.button("🚪 Déconnexion", use_container_width=True):
+            st.session_state.admin_connecte = False
+            st.session_state.admin_page = None
+            st.rerun()
+
+    st.divider()
+    st.markdown("### 🛒 Comment commander ?")
+    st.markdown("""
+    **1. Produits** → choisissez un article disponible.  
+    **2. Quantité** → indiquez le nombre souhaité.  
+    **3. Panier** → vérifiez les articles et le total.  
+    **4. Livraison** → choisissez votre région et votre zone.  
+    **5. Coordonnées** → renseignez nom, téléphone et adresse.  
+    **6. Paiement** → choisissez le mode de règlement.  
+    **7. Confirmation** → envoyez la commande par WhatsApp ou e-mail.
+    """)
+
+# =====================================================
+# PANNEAU ADMINISTRATEUR
+# =====================================================
+if st.session_state.admin_connecte and st.session_state.admin_page == "Produits":
+    st.markdown("# ⚙️ Administration du catalogue")
+    st.info("Ici, vous pouvez **mettre un produit en vedette, modifier son prix, activer/désactiver sa disponibilité, modifier ses informations, supprimer un produit et ajouter de nouveaux produits avec photo**.")
+
+    produits = st.session_state.produits_admin
+
+    tab1, tab2 = st.tabs(["🧾 Gérer les produits", "➕ Ajouter un produit"])
+
+    with tab1:
+        if not produits:
+            st.warning("Aucun produit dans le catalogue.")
+        else:
+            for idx, prod in enumerate(produits):
+                with st.container(border=True):
+                    cimg, cmain, cact = st.columns([1, 4, 1])
+                    with cimg:
+                        src = image_source(prod)
+                        if src:
+                            try:
+                                st.image(src, width=100)
+                            except Exception:
+                                st.write("📦")
+                        else:
+                            st.write("📦")
+                    with cmain:
+                        st.markdown(f"### {prod['nom']}")
+                        a,b,c,d = st.columns(4)
+                        with a:
+                            prod["prix"] = st.number_input(
+                                "Prix (FCFA)", min_value=0, value=int(prod.get("prix",0)),
+                                step=100, key=f"adm_prix_{idx}"
+                            )
+                        with b:
+                            prod["dispo"] = st.toggle(
+                                "Disponible", value=bool(prod.get("dispo",True)),
+                                key=f"adm_dispo_{idx}"
+                            )
+                        with c:
+                            prod["vedette"] = st.toggle(
+                                "⭐ Vedette", value=bool(prod.get("vedette",False)),
+                                key=f"adm_vedette_{idx}"
+                            )
+                        with d:
+                            prod["tag"] = st.text_input(
+                                "Badge", value=prod.get("tag",""),
+                                key=f"adm_tag_{idx}"
+                            )
+                        d1,d2,d3 = st.columns(3)
+                        with d1:
+                            prod["nom"] = st.text_input("Nom du produit", value=prod["nom"], key=f"adm_nom_{idx}")
+                        with d2:
+                            prod["conditionnement"] = st.text_input("Conditionnement", value=prod["conditionnement"], key=f"adm_cond_{idx}")
+                        with d3:
+                            prod["origine"] = st.text_input("Origine", value=prod["origine"], key=f"adm_orig_{idx}")
+                    with cact:
+                        st.write("")
+                        if st.button("🗑️ Retirer", key=f"adm_delete_{idx}", use_container_width=True):
+                            st.session_state.produits_admin.pop(idx)
+                            st.rerun()
+
+    with tab2:
+        with st.form("ajout_produit_admin", clear_on_submit=True):
+            st.markdown("### ➕ Nouveau produit")
+            n1,n2 = st.columns(2)
+            with n1:
+                nouveau_nom = st.text_input("Nom du produit *")
+                nouveau_prix = st.number_input("Prix en FCFA *", min_value=0, value=1000, step=100)
+                nouveau_cond = st.text_input("Conditionnement", value="Unité")
+                nouvelle_cat = st.selectbox("Catégorie", ["Fruits & Légumes", "Céréales & Graines", "Irrigation & Équipements", "Autres"])
+            with n2:
+                nouvelle_origine = st.text_input("Origine", value="Sénégal")
+                nouveau_tag = st.text_input("Badge / étiquette", placeholder="⭐ Nouveau, 🔥 Promo...")
+                nouvelle_dispo = st.checkbox("Produit disponible", value=True)
+                nouvelle_vedette = st.checkbox("⭐ Mettre en vedette", value=False)
+                nouvelle_photo = st.file_uploader("📷 Photo du produit", type=["png","jpg","jpeg","webp"])
+
+            ajouter = st.form_submit_button("➕ Ajouter au catalogue", use_container_width=True, type="primary")
+            if ajouter:
+                if not nouveau_nom.strip():
+                    st.error("Le nom du produit est obligatoire.")
+                else:
+                    nouveau = {
+                        "image": "",
+                        "nom": nouveau_nom.strip(),
+                        "prix": int(nouveau_prix),
+                        "conditionnement": nouveau_cond.strip() or "Unité",
+                        "cat": nouvelle_cat,
+                        "tag": nouveau_tag.strip(),
+                        "origine": nouvelle_origine.strip() or "Sénégal",
+                        "dispo": nouvelle_dispo,
+                        "vedette": nouvelle_vedette,
+                    }
+                    if nouvelle_photo is not None:
+                        nouveau["photo_bytes"] = nouvelle_photo.getvalue()
+                    st.session_state.produits_admin.append(nouveau)
+                    st.success(f"✅ {nouveau['nom']} a été ajouté au catalogue.")
+                    st.rerun()
+
+    st.warning("ℹ️ Les modifications de cet espace sont conservées dans la session Streamlit actuelle. Pour une conservation permanente après redémarrage/déploiement, il faudra relier le catalogue à une base de données (par exemple Supabase).")
+    st.stop()
+
+if st.session_state.admin_connecte and st.session_state.admin_page == "Commandes":
+    st.markdown("# 📋 Administration des commandes")
+    st.info("Cette page permet de consulter les commandes créées pendant la session et de retrouver rapidement les informations utiles au traitement.")
+
+    historique = st.session_state.historique
+    if not historique:
+        st.warning("Aucune commande enregistrée dans cette session.")
+    else:
+        st.metric("Commandes enregistrées", len(historique))
+        for idx, cmd in enumerate(reversed(historique), start=1):
+            with st.expander(f"📦 Commande #{idx} — {cmd.get('client','Client')} — {cmd.get('total','')}", expanded=False):
+                st.write(f"**Mode de paiement :** {cmd.get('paiement','')}")
+                st.code(cmd.get("brut_texte",""), language=None)
+    st.stop()
+
 # =====================================================
 # SELECTION DU MENU VIA ST.RADIO
 # =====================================================
+
 options_menu = [
     "🏠 Accueil", 
     "🛒 Produits", 
@@ -470,403 +679,308 @@ if selected == "Accueil":
     st.info("🇸🇳 **YouAgronoMe** : Une entreprise de technologie agropastorale de confiance, conçue pour durer et sécuriser la chaîne d'approvisionnement de nos terroirs.")
 # =====================================================
 # =====================================================
-# PRODUITS (VERSION PROFESSIONNELLE & TRACABILITÉ TERROIR)
+# PRODUITS — CATALOGUE DYNAMIQUE
 # =====================================================
 elif selected == "Produits":
 
+    produits = st.session_state.produits_admin
+
     st.markdown("<h1 style='text-align: center; color: #1B5E20; font-weight: 800;'>🌾 Notre Marché Agricole en Direct</h1>", unsafe_allow_html=True)
     st.markdown("""
-    <p style='text-align: center; color: #4a5568; max-width: 700px; margin: 0 auto 25px auto;'>
-        Commandez des produits de qualité issus du circuit court. Nous travaillons sans intermédiaire avec les GIE (Groupements d'Intérêt Économique) du Fleuve et des Niayes pour vous garantir fraîcheur et juste rémunération des producteurs.
+    <p style='text-align: center; color: #4a5568; max-width: 800px; margin: 0 auto 20px auto;'>
+        Choisissez un produit, consultez son prix et sa disponibilité, puis ajoutez-le au panier.
+        Les produits marqués <b>⭐ Vedette</b> sont mis en avant par l'administration.
     </p>
     """, unsafe_allow_html=True)
 
-    # Bandeau d'engagement de la coopérative
-    st.info("🥦 **Garantie Fraîcheur & Qualité** : Tous nos fruits et légumes sont récoltés à maturité, triés manuellement, puis conditionnés dans notre hub logistique de Sor (Saint-Louis) avant expédition.")
+    vedettes = [p for p in produits if p.get("vedette") and p.get("dispo")]
+    if vedettes:
+        st.markdown("### ⭐ Produits en vedette")
+        cols_v = st.columns(min(4, len(vedettes)))
+        for i, p in enumerate(vedettes[:4]):
+            with cols_v[i % len(cols_v)]:
+                with st.container(border=True):
+                    src = image_source(p)
+                    if src:
+                        try: st.image(src, use_container_width=True)
+                        except Exception: st.write("📦")
+                    else:
+                        st.markdown("<div style='text-align:center;font-size:45px;'>📦</div>", unsafe_allow_html=True)
+                    st.markdown(f"**{p['nom']}**")
+                    st.markdown(f"### {p['prix']:,} FCFA")
+                    st.caption(p["conditionnement"])
 
-    # Barre de recherche et filtres de catégorie
     col_search, col_cat = st.columns([2, 1])
     with col_search:
-        recherche = st.text_input("🔍 Rechercher un produit (ex: Riz, Tomates...)", "")
+        recherche = st.text_input("🔍 Rechercher un produit", "")
     with col_cat:
-        categorie_choisie = st.selectbox("📁 Filtrer par filière", ["Toutes", "Fruits & Légumes", "Céréales & Graines"])
+        categories = ["Toutes"] + sorted(set(p.get("cat","Autres") for p in produits))
+        categorie_choisie = st.selectbox("📁 Filtrer par catégorie", categories)
 
-    st.divider()
-
-    # Base de données produits enrichie (Données réelles du marché local sénégalais)
-    # Structure : (Image, Nom, Prix (Numérique), Conditionnement, Catégorie, Tag, Origine Terroir, Stock disponible)
-    produits = [
-        ("to.jpg", "Tomates fraîches", 3500, "Sac de 5Kg", "Fruits & Légumes", "🔥 Prix Producteur", "Niayes", "En stock"),
-        ("fr.jpg", "Fraises locales", 5000, "Sachet de 2Kg", "Fruits & Légumes", "✨ Spécialité", "Thiès (Mboro)", "Stock limité"),
-        ("og.jpg", "Oignons rouges", 2500, "Sac de 5Kg", "Fruits & Légumes", "", "Vallée du Fleuve", "En stock"),
-        ("cr.jpg", "Carottes lavées", 3000, "Sac de 5Kg", "Fruits & Légumes", "", "Zone des Niayes", "En stock"),
-        ("pm.jpg", "Piments Verts / Rouges", 2000, "Sac de 3Kg", "Fruits & Légumes", "⚡ Récolte fraîche", "Louga", "En stock"),
-        ("cc.jpg", "Concombres", 2800, "Sac de 3Kg", "Fruits & Légumes", "", "Zone des Niayes", "En stock"),
-        ("pt.jpg", "Pommes de terre local", 4500, "Sachet de 5Kg", "Fruits & Légumes", "", "Vallée du Fleuve", "En stock"),
-        ("or.jpg", "Oranges douces", 4000, "Sac de 3Kg", "Fruits & Légumes", "", "Casamance", "En stock"),
-        ("mangue.jpg", "Mangues Kent", 3500, "Panier de 5Kg", "Fruits & Légumes", "🥭 Saison", "Pout / Niayes", "Stock limité"),
-        ("banane.jpg", "Bananes douces", 2500, "Régime (~4-5kg)", "Fruits & Légumes", "", "Tambacounda", "En stock"),
-        ("mais.jpg", "Maïs grain jaune", 7000, "Sac de 25Kg", "Céréales & Graines", "", "Bassin Arachidier", "En stock"),
-        ("arachide.jpg", "Arachides décortiquées", 8500, "Sac de 10Kg", "Céréales & Graines", "", "Kaolack", "En stock"),
-        ("riz.jpg", "Riz local brisé", 12000, "Sac de 25Kg", "Céréales & Graines", "⭐ Souveraineté", "Vallée du Fleuve (Podor)", "En stock"),
-        ("mil.jpg", "Mil Souna", 9000, "Sac de 20Kg", "Céréales & Graines", "", "Région de Fatick", "En stock"),
-        ("pasteque.jpg", "Pastèques", 6000, "Gros calibre (L'unité)", "Fruits & Légumes", "", "Kaffrine", "En stock"),
-        ("citron.jpg", "Citrons verts", 2000, "Filet de 2.5kg", "Fruits & Légumes", "", "Thiès", "En stock"),
-        ("niebe.jpg", "Niébé (Haricot)", 6500, "Sac de 10Kg", "Céréales & Graines", "", "Louga (Kébémer)", "En stock"),
-        ("gombo.jpg", "Gombos frais", 2200, "Panier de 3Kg", "Fruits & Légumes", "", "Faye (Saint-Louis)", "En stock"),
-        ("bissap.jpg", "Bissap Rouge (Fleurs)", 3000, "Sachet de 2Kg", "Céréales & Graines", "🌺 Qualité Supérieure", "Kaolack", "En stock"),
-        ("sesame.jpg", "Graines de sésame", 7500, "Sac de 10Kg", "Céréales & Graines", "", "Sédhiou", "En stock")
-    ]
-
-    # Filtrage algorithmique des produits
     produits_filtres = [
-        p for p in produits 
-        if (recherche.lower() in p[1].lower() or recherche.lower() in p[6].lower()) 
-        and (categorie_choisie == "Toutes" or p[4] == categorie_choisie)
+        p for p in produits
+        if recherche.lower() in p.get("nom","").lower()
+        and (categorie_choisie == "Toutes" or p.get("cat") == categorie_choisie)
     ]
 
+    st.markdown("### 🛍️ Catalogue")
     if not produits_filtres:
-        st.warning("🔍 Aucun produit ne correspond à vos critères de recherche.")
+        st.warning("🔍 Aucun produit ne correspond à votre recherche.")
     else:
-        # Grille de présentation épurée de 4 colonnes
         cols = st.columns(4)
         for i, p in enumerate(produits_filtres):
-            image, nom, prix, conditionnement, cat, tag, origine, dispo = p
-            
             with cols[i % 4]:
                 with st.container(border=True):
-                    # En-tête de la fiche produit (Tag & Disponibilité)
-                    col_t1, col_t2 = st.columns([3, 2])
-                    with col_t1:
-                        if tag:
-                            st.markdown(f"<span style='background-color:#E8F5E9; color:#2E7D32; font-size:10px; padding:3px 8px; border-radius:10px; font-weight:bold; text-transform:uppercase;'>{tag}</span>", unsafe_allow_html=True)
-                        else:
-                            st.write("")
-                    with col_t2:
-                        color_dispo = "#2E7D32" if dispo == "En stock" else "#E65100"
-                        st.markdown(f"<p style='color: {color_dispo}; font-size: 11px; text-align: right; margin: 0; font-weight: 600;'>● {dispo}</p>", unsafe_allow_html=True)
-                    
-                    # Image du produit
-                    try:
-                        st.image(image, use_container_width=True)
-                    except:
-                        st.markdown(f"<div style='height:120px; background-color:#F7FAF0; display:flex; align-items:center; justify-content:center; border-radius:8px; border: 1px dashed #C8E6C9; margin-bottom: 8px;'><span style='color:#2E7D32; font-size:2rem;'>📦</span></div>", unsafe_allow_html=True)
-                        
-                    # Informations Produit
-                    st.markdown(f"<h4 style='margin: 8px 0 2px 0; color: #2D3748; font-weight: 700; font-size: 1.1rem;'>{nom}</h4>", unsafe_allow_html=True)
-                    st.markdown(f"<p style='color: #718096; font-size: 12px; margin: 0 0 10px 0;'>📍 Origine : <b>{origine}</b></p>", unsafe_allow_html=True)
-                    
-                    # Prix & Conditionnement
-                    st.markdown(f"""
-                    <div style="background-color: #F8FAFC; padding: 8px; border-radius: 6px; border: 1px solid #E2E8F0; margin-bottom: 12px;">
-                        <span style="font-size: 14px; color: #2E7D32; font-weight: 800; display: block;">{prix:,} FCFA</span>
-                        <span style="font-size: 11px; color: #718096;">Format : {conditionnement}</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Action d'achat
-                    qte_ajout = st.number_input("Quantité", min_value=1, max_value=100, value=1, key=f"qte_{nom}_{i}", label_visibility="collapsed")
-                    
-                    if st.button("🛒 Ajouter au Panier", key=f"btn_{nom}_{i}", type="primary", use_container_width=True):
-                        deja_au_panier = False
-                        texte_prix_complet = f"{prix} FCFA par {conditionnement}"
-                        
-                        # Vérification des doublons dans le panier
-                        for item in st.session_state.panier:
-                            if item["produit"] == nom:
-                                item["quantite"] += qte_ajout
-                                deja_au_panier = True
-                                break
-                        
-                        if not deja_au_panier:
-                            st.session_state.panier.append({
-                                "produit": nom,
-                                "prix": texte_prix_complet,
-                                "quantite": qte_ajout
-                            })
-                        
-                        st.toast(f"✅ {qte_ajout}x {nom} ajouté(s) à votre panier !", icon="🛒")
+                    if p.get("vedette"):
+                        st.markdown("<span style='background:#fff3cd;color:#856404;padding:4px 8px;border-radius:10px;font-size:11px;font-weight:bold;'>⭐ VEDETTE</span>", unsafe_allow_html=True)
+
+                    src = image_source(p)
+                    if src:
+                        try: st.image(src, use_container_width=True)
+                        except Exception: st.markdown("<div style='font-size:45px;text-align:center;'>📦</div>", unsafe_allow_html=True)
+                    else:
+                        st.markdown("<div style='font-size:45px;text-align:center;'>📦</div>", unsafe_allow_html=True)
+
+                    st.markdown(f"### {p['nom']}")
+                    if p.get("tag"):
+                        st.caption(p["tag"])
+                    st.write(f"📍 **Origine :** {p.get('origine','Sénégal')}")
+                    st.write(f"📦 **Format :** {p.get('conditionnement','Unité')}")
+                    st.markdown(f"### {p.get('prix',0):,} FCFA")
+
+                    if p.get("dispo"):
+                        st.success("🟢 Disponible")
+                        qte = st.number_input(
+                            "Quantité",
+                            min_value=1, max_value=100, value=1,
+                            key=f"qte_dyn_{i}_{p['nom']}"
+                        )
+                        if st.button("🛒 Ajouter au panier", key=f"add_dyn_{i}_{p['nom']}", use_container_width=True, type="primary"):
+                            found = False
+                            for item in st.session_state.panier:
+                                if item["produit"] == p["nom"]:
+                                    item["quantite"] += qte
+                                    item["prix_unitaire"] = int(p["prix"])
+                                    item["prix"] = f"{p['prix']} FCFA par {p['conditionnement']}"
+                                    found = True
+                                    break
+                            if not found:
+                                st.session_state.panier.append({
+                                    "produit": p["nom"],
+                                    "prix": f"{p['prix']} FCFA par {p['conditionnement']}",
+                                    "prix_unitaire": int(p["prix"]),
+                                    "quantite": qte
+                                })
+                            st.toast(f"✅ {qte} × {p['nom']} ajouté au panier", icon="🛒")
+                    else:
+                        st.error("🔴 Indisponible")
+                        st.button("Indisponible", key=f"disabled_{i}_{p['nom']}", disabled=True, use_container_width=True)
+
 # =====================================================
-# COMMANDE
+# COMMANDE — PARCOURS SIMPLIFIÉ
 # =====================================================
 elif selected == "Commande":
 
-    st.markdown("<h1 style='text-align: center; color: #1B5E20; font-weight: 800;'>📦 Votre E-Panier & Facturation</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #1B5E20; font-weight: 800;'>📦 Passer une commande</h1>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:18px;border-radius:14px;margin-bottom:20px;">
+    <b>Comment ça marche ?</b><br>
+    ① Choisissez vos produits → ② vérifiez votre panier → ③ indiquez le lieu de livraison →
+    ④ renseignez vos coordonnées → ⑤ choisissez le paiement → ⑥ confirmez.
+    </div>
+    """, unsafe_allow_html=True)
 
     NUMERO_WHATSAPP = "221777473170"
     EMAIL_DEST = "issayoume2012@gmail.com"
     panier = st.session_state.panier
 
     if not panier:
-        st.markdown("""
-        <div style="text-align: center; padding: 40px; background: #fffcf5; border: 1px dashed #ffe0b2; border-radius: 16px; margin: 20px 0;">
-            <h2 style="color: #e65100; margin: 0 0 10px 0;">🛒 Votre panier est vide</h2>
-            <p style="color: #666; margin: 0;">Explorez l'onglet <b>Produits</b> pour composer votre panier en quelques clics.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("<h3 style='color: #2E7D32; margin-bottom: 15px;'>🛒 Vérification des articles</h3>", unsafe_allow_html=True)
+        st.warning("🛒 Votre panier est vide. Allez dans **Produits** pour ajouter un article.")
+        st.stop()
 
-        total_articles = 0
-        total_financier = 0
+    st.markdown("## 1️⃣ Vérifier votre panier")
+    total_articles = 0
+    total_financier = 0
 
-        # Affichage et gestion des articles présents dans le panier
-        for i, item in enumerate(list(panier)):
+    for i, item in enumerate(list(panier)):
+        prix_unitaire = int(item.get("prix_unitaire", 0))
+        if prix_unitaire == 0:
             try:
-                partie_prix = item["prix"].split("FCFA")[0]
-                prix_numerique = int(''.join(filter(str.isdigit, partie_prix)))
+                prix_unitaire = int(''.join(filter(str.isdigit, item["prix"].split("FCFA")[0])))
             except:
-                prix_numerique = 0
-                
-            sous_total = prix_numerique * item["quantite"]
-            total_financier += sous_total
-            total_articles += item["quantite"]
+                prix_unitaire = 0
 
-            with st.container():
-                c1, c2, c3, c4 = st.columns([4, 2, 3, 1])
-                with c1:
-                    st.markdown(f"<p style='font-size: 16px; font-weight: 600; margin:0;'>🍏 {item['produit']}</p>", unsafe_allow_html=True)
-                    st.markdown(f"<p style='font-size: 12px; color: #718096; margin:0;'>{item['prix']}</p>", unsafe_allow_html=True)
-                with c2:
-                    st.markdown(f"<p style='font-size: 16px; margin:0; text-align: center;'><b>{item['quantite']}</b> unitaire(s)</p>", unsafe_allow_html=True)
-                with c3:
-                    st.markdown(f"<p style='font-size: 16px; font-weight: 700; color:#2E7D32; margin:0;'>{sous_total:,} FCFA</p>", unsafe_allow_html=True)
-                with c4:
-                    if st.button("❌", key=f"supprimer_{i}"):
-                        st.session_state.panier.pop(i)
-                        st.rerun()
-                st.markdown("<hr style='margin: 8px 0; border: 0.5px solid #edf2f7;'>", unsafe_allow_html=True)
+        c1,c2,c3,c4 = st.columns([4,2,2,1])
+        with c1:
+            st.markdown(f"**🛒 {item['produit']}**")
+            st.caption(item["prix"])
+        with c2:
+            nouvelle_qte = st.number_input("Quantité", min_value=1, max_value=100, value=int(item["quantite"]), key=f"cmd_qte_{i}")
+            item["quantite"] = nouvelle_qte
+        sous_total = prix_unitaire * nouvelle_qte
+        total_financier += sous_total
+        total_articles += nouvelle_qte
+        with c3:
+            st.markdown(f"**{sous_total:,} FCFA**")
+        with c4:
+            if st.button("🗑️", key=f"cmd_sup_{i}"):
+                st.session_state.panier.pop(i)
+                st.rerun()
 
-        # Base de données géographique du Sénégal avec quartiers détaillés
-        @st.cache_data
-        def get_geo_senegal_detail():
-            return {
-                "Dakar": [
-                    "Dakar Plateau", "Médina", "Fann / Point E / Amitié", "Mermoz / Sacré-Cœur", 
-                    "Ouakam", "Ngor", "Almadies", "Yoff", "Grand Yoff", "Parcelles Assainies", 
-                    "Guédiawaye", "Pikine", "Thiaroye", "Keur Massar", "Rufisque", "Diamniadio"
-                ],
-                "Saint-Louis": [
-                    "SND (Saint-Louis île)", "Sor", "Ndiolofène", "Balacos", "Guet Ndar", 
-                    "Goxu Mbacc", "Bango", "Hydrobase", "Rao", "Richard-Toll", "Dagana", 
-                    "Podor", "Ndioum", "Ross Béthio"
-                ],
-                "Thiès": [
-                    "Thiès Ville (Mbourène / Grand Thiès)", "Dixième", "Saly Portudal", 
-                    "Mbour Ville", "Somone", "Ngaparou", "Joal-Fadiouth", "Tivaouane", 
-                    "Mboro", "Pout", "Khombole", "Popenguine"
-                ],
-                "Diourbel": ["Diourbel Ville", "Touba Mosquée", "Mbacké", "Bambey"],
-                "Louga": ["Louga Ville", "Linguère", "Dahra", "Kébémer"],
-                "Fatick": ["Fatick Ville", "Foundiougne", "Gossas", "Sokone", "Diofior"],
-                "Kaolack": ["Kaolack Ville", "Nioro du Rip", "Guinguinéo", "Kahone"],
-                "Kaffrine": ["Kaffrine Ville", "Koungheul", "Birkelane", "Malem Hodar"],
-                "Tambacounda": ["Tambacounda Ville", "Bakel", "Goudiry", "Koumpentoum"],
-                "Kolda": ["Kolda Ville", "Vélingara", "Médina Yoro Foulah"],
-                "Ziguinchor": ["Ziguinchor Ville", "Bignona", "Oussouye", "Cap Skirring"],
-                "Sédhiou": ["Sédhiou Ville", "Goudomp", "Bounkiling"],
-                "Matam": ["Matam Ville", "Ourossogui", "Kanel", "Ranérou"],
-                "Kédougou": ["Kédougou Ville", "Saraya", "Salémata"]
-            }
+    st.divider()
+    st.markdown("## 2️⃣ Livraison")
+    st.caption("La région et la zone servent à calculer automatiquement les frais et à donner une estimation du délai.")
 
-        geo_senegal = get_geo_senegal_detail()
+    @st.cache_data
+    def get_geo_senegal_detail():
+        return {
+            "Dakar": ["Dakar Plateau","Médina","Fann / Point E / Amitié","Mermoz / Sacré-Cœur","Ouakam","Ngor","Almadies","Yoff","Grand Yoff","Parcelles Assainies","Guédiawaye","Pikine","Thiaroye","Keur Massar","Rufisque","Diamniadio"],
+            "Saint-Louis": ["SND (Saint-Louis île)","Sor","Ndiolofène","Balacos","Guet Ndar","Goxu Mbacc","Bango","Hydrobase","Rao","Richard-Toll","Dagana","Podor","Ndioum","Ross Béthio"],
+            "Thiès": ["Thiès Ville (Mbourène / Grand Thiès)","Dixième","Saly Portudal","Mbour Ville","Somone","Ngaparou","Joal-Fadiouth","Tivaouane","Mboro","Pout","Khombole","Popenguine"],
+            "Diourbel": ["Diourbel Ville","Touba Mosquée","Mbacké","Bambey"],
+            "Louga": ["Louga Ville","Linguère","Dahra","Kébémer"],
+            "Fatick": ["Fatick Ville","Foundiougne","Gossas","Sokone","Diofior"],
+            "Kaolack": ["Kaolack Ville","Nioro du Rip","Guinguinéo","Kahone"],
+            "Kaffrine": ["Kaffrine Ville","Koungheul","Birkelane","Malem Hodar"],
+            "Tambacounda": ["Tambacounda Ville","Bakel","Goudiry","Koumpentoum"],
+            "Kolda": ["Kolda Ville","Vélingara","Médina Yoro Foulah"],
+            "Ziguinchor": ["Ziguinchor Ville","Bignona","Oussouye","Cap Skirring"],
+            "Sédhiou": ["Sédhiou Ville","Goudomp","Bounkiling"],
+            "Matam": ["Matam Ville","Ourossogui","Kanel","Ranérou"],
+            "Kédougou": ["Kédougou Ville","Saraya","Salémata"]
+        }
 
-        st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>⚙️ Réseau Logistique National & Facturation</h3>", unsafe_allow_html=True)
-        col_reg, col_com, col_promo = st.columns(3)
-        
-        with col_reg:
-            region_selectionnee = st.selectbox("📍 Région du Sénégal *", list(geo_senegal.keys()))
-            
-        with col_com:
-            commune_selectionnee = st.selectbox("🏙️ Quartier / Commune / Zone *", geo_senegal[region_selectionnee])
+    geo_senegal = get_geo_senegal_detail()
+    col_reg, col_com = st.columns(2)
+    with col_reg:
+        region_selectionnee = st.selectbox("📍 Région du Sénégal *", list(geo_senegal.keys()))
+    with col_com:
+        commune_selectionnee = st.selectbox("🏙️ Quartier / Commune / Zone *", geo_senegal[region_selectionnee])
 
-        # Tarification logistique réelle selon la proximité territoriale
-        frais_livraison = 0
-        delai_estime = ""
-
-        if region_selectionnee == "Saint-Louis":
-            # Notre hub d'ancrage local
-            if commune_selectionnee in ["SND (Saint-Louis île)", "Sor", "Ndiolofène", "Balacos", "Guet Ndar", "Goxu Mbacc", "Bango", "Hydrobase"]:
-                frais_livraison = 1500
-                delai_estime = "⚡ Proximité Hub : Livraison dans la journée"
-            else:
-                frais_livraison = 3000
-                delai_estime = "🚛 Régional Saint-Louis : 24h à 48h"
-        elif region_selectionnee == "Dakar":
-            frais_livraison = 2500
-            delai_estime = "⚡ Axe Dakar Express : Livraison sous 24h"
-        elif region_selectionnee == "Thiès":
-            frais_livraison = 3500
-            delai_estime = "🚛 Axe Thiès/Mbour : Livraison sous 24h à 48h"
-        elif region_selectionnee in ["Diourbel", "Fatick", "Kaolack", "Louga"]:
-            frais_livraison = 4500
-            delai_estime = "📦 Expédition Centre : 48h à 72h"
-        else:
-            # Zones plus lointaines (Casamance, Sénégal Oriental, Nord Est)
-            frais_livraison = 5500
-            delai_estime = "🗺️ Expédition Longue Distance : 72h à 96h via lignes partenaires"
-
-        with col_promo:
-            code_promo = st.text_input("🎟️ Code Promo (Optionnel)", "").strip()
-            remise = 0
-            if code_promo.upper() == "YOU2026":
-                remise = int(total_financier * 0.10)
-                st.success("🎉 Code valide (-10%)")
-
-        # Application de la tarification finale
-        total_final_net = total_financier + frais_livraison - remise
-        points_gagnes = total_final_net // 1000
-
-        st.info(f"📍 Réseau de livraison : Région de {region_selectionnee} — Secteur {commune_selectionnee}\n\n⏱️ Délai de transport estimé : {delai_estime}")
-        
-        c_sub, c_liv, c_rem = st.columns(3)
-        with c_sub:
-            st.text(f"Sous-total : {total_financier:,} FCFA")
-        with c_liv:
-            st.text(f"Frais de transport : {frais_livraison:,} FCFA")
-        with c_rem:
-            if remise > 0:
-                st.text(f"Réduction : -{remise:,} FCFA")
-        
-        st.metric(label="TOTAL NET À PAYER", value=f"{total_final_net:,} FCFA")
-        st.success(f"🌱 Points fidélité collectés : +{points_gagnes} points sur cette commande.")
-
-        st.markdown("<h3 style='color: #2E7D32; margin-top: 30px;'>👤 Coordonnées du Destinataire & Planification</h3>", unsafe_allow_html=True)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            nom = st.text_input("Nom complet *", placeholder="Ex: Issa Youme")
-            telephone = st.text_input("Téléphone fonctionnel (WhatsApp de préférence) *", placeholder="Ex: 777473170")
-            adresse = st.text_input("Complément d'adresse exacte *", placeholder="Maison, Rue, Indications visuelles (ex: à côté de la Mosquée)...")
-        with col2:
-            paiement = st.selectbox("Méthode de paiement", ["Présentiel (À la livraison)", "Wave", "Orange Money"])
-            
-            # Calcul des jours de marge réels pour la livraison
-            delai_jours = 1 if region_selectionnee in ["Saint-Louis", "Dakar"] else (2 if region_selectionnee == "Thiès" else 3)
-            date_min = datetime.now() + timedelta(days=delai_jours)
-            date_livraison = st.date_input("Date de réception souhaitée", value=date_min, min_value=datetime.now())
-            
-            creneau_horaire = st.selectbox("Créneau horaire préféré", [
-                "Matin (08h00 - 12h00)", 
-                "Après-midi (13h00 - 17h00)", 
-                "Fin de journée (17h00 - 20h00)"
-            ])
-            
-        commentaire = st.text_area("Instructions spéciales pour le livreur", placeholder="Ex: Déposer chez le gardien, appeler 10 minutes avant d'arriver...")
-
-        if paiement in ["Wave", "Orange Money"]:
-            st.warning(f"💳 Paiement mobile sélectionné : Merci d'effectuer votre transfert au **+221 77 747 31 70** une fois votre commande envoyée.")
-
-        with st.expander("📄 Bordereau de chargement", expanded=False):
-            for p in panier:
-                st.write(f"• {p['produit']} x{p['quantite']} — ({p['prix']})")
-
-        # Soumission de la commande
-        if st.button("🚀 Confirmer et Commander", use_container_width=True, type="primary"):
-            if not nom or not telephone or not adresse:
-                st.error("⚠️ Erreur : Les champs obligatoires (*) doivent être remplis.")
-            else:
-                texte_produits = ""
-                for p in panier:
-                    texte_produits += f"• {p['produit']} x {p['quantite']} ({p['prix']})\n"
-
-                # Création du message de commande
-                message = f"""🌾 COMMANDE YOUAGRONOME SÉNÉGAL\n\n👤 DESTINATAIRE :\n• Nom : {nom}\n• Tél : {telephone}\n• Région : {region_selectionnee}\n• Secteur/Quartier : {commune_selectionnee}\n• Adresse précise : {adresse}\n\n📅 LOGISTIQUE DE LIVRAISON :\n• Date souhaitée : {date_livraison.strftime('%d/%m/%Y')}\n• Tranche horaire : {creneau_horaire}\n\n📦 DÉTAILS DU PANIER :\n{texte_produits}\n💰 SOUS-TOTAL : {total_financier:,} FCFA\n🚚 LOGISTIQUE TERRAIN : {frais_livraison:,} FCFA\n📉 REMISE CODE : {remise:,} FCFA\n💵 TOTAL NET GLOBAL : {total_final_net:,} FCFA\n\n💳 MODE DE RÈGLEMENT :\n• Choix : {paiement}\n• Instructions : {commentaire if commentaire else 'Aucune consigne particulière.'}"""
-
-                # Modèle HTML de Facture Pro sans fioritures superflues
-                html_facture = f"""
-                <div style="font-family: Arial, sans-serif; padding: 25px; border: 1px solid #ccffcc; max-width: 550px; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                    <h2 style="color: #1B5E20; text-align: center; margin-bottom: 0; font-weight: 800; letter-spacing: 1px;">YOUAGRONOME SÉNÉGAL</h2>
-                    <p style="text-align: center; font-size: 12px; color: #777; margin-top: 5px;">Réseau de Distribution de Proximité</p>
-                    <hr style="border: 0.5px solid #e2e8f0; margin: 15px 0;">
-                    <p style="font-size: 13px; line-height: 1.6; color: #2d3748;">
-                        <b>Destinataire :</b> {nom}<br>
-                        <b>Téléphone :</b> {telephone}<br>
-                        <b>Zone géographique :</b> {region_selectionnee} — {commune_selectionnee}<br>
-                        <b>Adresse exacte :</b> {adresse}<br>
-                        <b>Date programmée :</b> {date_livraison.strftime('%d/%m/%Y')} ({creneau_horaire})
-                    </p>
-                    <hr style="border: 0.5px solid #e2e8f0; margin: 15px 0;">
-                    <h4 style="color: #2E7D32; margin-bottom: 10px;">Articles Commandés :</h4>
-                    <p style="font-size: 13px; color: #4a5568; line-height: 1.6; background-color: #f7fafc; padding: 10px; border-radius: 6px;">{texte_produits.replace('\n', '<br>')}</p>
-                    <hr style="border: 0.5px dashed #cbd5e0; margin: 15px 0;">
-                    <table style="width: 100%; font-size: 14px; color: #4a5568; line-height: 2;">
-                        <tr><td>Total Articles :</td><td style="text-align: right; font-weight: 600;">{total_financier:,} FCFA</td></tr>
-                        <tr><td>Livraison ({commune_selectionnee}) :</td><td style="text-align: right; font-weight: 600;">{frais_livraison:,} FCFA</td></tr>
-                        <tr style="color: #c53030;"><td>Code de réduction :</td><td style="text-align: right; font-weight: 600;">-{remise:,} FCFA</td></tr>
-                        <tr style="font-size: 18px; font-weight: 800; color: #1B5E20;">
-                            <td style="padding-top: 12px; border-top: 1px solid #edf2f7;">Montant Global Net :</td>
-                            <td style="text-align: right; padding-top: 12px; border-top: 1px solid #edf2f7;">{total_final_net:,} FCFA</td>
-                        </tr>
-                    </table>
-                    <p style="font-size: 11px; text-align: center; color: #a0aec0; margin-top: 30px; font-style: italic; border-top: 1px solid #edf2f7; padding-top: 10px;">YouAgronoMe - Jeune entreprise sénégalaise au service de nos terroirs.</p>
-                </div>
-                """
-
-                whatsapp_link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + urllib.parse.quote(message)
-                email_link = f"mailto:{EMAIL_DEST}?subject=Commande YouAgronoMe - {nom}&body=" + urllib.parse.quote(message)
-
-                # Sauvegarde au sein de l'historique
-                st.session_state.historique.append({
-                    "client": nom,
-                    "paiement": paiement,
-                    "total": f"{total_final_net:,} FCFA",
-                    "commande": panier.copy(),
-                    "brut_texte": message,
-                    "html_facture": html_facture
-                })
-
-                st.success("🎉 Votre bon de commande a bien été enregistré !")
-                c1, c2 = st.columns(2)
-                with c1:
-                    st.link_button("📱 Envoyer sur WhatsApp", whatsapp_link, use_container_width=True)
-                with c2:
-                    st.link_button("📧 Envoyer par E-mail", email_link, use_container_width=True)
-
-        st.markdown("<br><hr>", unsafe_allow_html=True)
-        if st.button("🧹 Vider entièrement le panier", use_container_width=True):
-            st.session_state.panier = []
-            st.rerun()
-
-    # Section Historique de session
-    st.markdown("<h3 style='color: #4a5568; margin-top: 40px;'>📜 Vos commandes enregistrées</h3>", unsafe_allow_html=True)
-    historique = st.session_state.historique
-
-    if not historique:
-        st.info("Aucun achat enregistré lors de cette visite en ligne.")
+    if region_selectionnee == "Saint-Louis":
+        frais_livraison = 1500 if commune_selectionnee in ["SND (Saint-Louis île)","Sor","Ndiolofène","Balacos","Guet Ndar","Goxu Mbacc","Bango","Hydrobase"] else 3000
+        delai_estime = "dans la journée" if frais_livraison == 1500 else "24h à 48h"
+    elif region_selectionnee == "Dakar":
+        frais_livraison, delai_estime = 2500, "sous 24h"
+    elif region_selectionnee == "Thiès":
+        frais_livraison, delai_estime = 3500, "24h à 48h"
+    elif region_selectionnee in ["Diourbel","Fatick","Kaolack","Louga"]:
+        frais_livraison, delai_estime = 4500, "48h à 72h"
     else:
-        for idx, cmd in enumerate(reversed(historique), start=1):
-            with st.expander(f"📦 Commande #{idx} — {cmd['client']} ({cmd['total']})"):
-                st.markdown(f"**Règlement choisi :** `{cmd['paiement']}`")
-                
-                if "html_facture" in cmd:
-                    st.markdown(cmd["html_facture"], unsafe_allow_html=True)
-                    st.write("")
-                else:
-                    for p in cmd["commande"]:
-                        st.write(f"• {p['produit']} (x{p['quantite']})")
-                
-                btn_txt, btn_html = st.columns(2)
-                
-                with btn_txt:
-                    st.download_button(
-                        label="📥 Reçu (Format Texte)",
-                        data=cmd.get("brut_texte", "Aucune donnée"),
-                        file_name=f"recu_youagronome_{idx}.txt",
-                        mime="text/plain",
-                        key=f"dl_txt_{idx}",
-                        use_container_width=True
-                    )
-                
-                with btn_html:
-                    st.download_button(
-                        label="🖨️ Facture (Format Imprimable)",
-                        data=cmd.get("html_facture", "Aucune donnée"),
-                        file_name=f"facture_youagronome_{idx}.html",
-                        mime="text/html",
-                        key=f"dl_html_{idx}",
-                        use_container_width=True
-                    )
+        frais_livraison, delai_estime = 5500, "72h à 96h"
+
+    st.info(f"🚚 Frais de livraison estimés : **{frais_livraison:,} FCFA** — Délai indicatif : **{delai_estime}**.")
+
+    st.markdown("## 3️⃣ Coordonnées du destinataire")
+    col1,col2 = st.columns(2)
+    with col1:
+        nom = st.text_input("Nom complet *", placeholder="Ex. Issa Youme")
+        telephone = st.text_input("Téléphone / WhatsApp *", placeholder="Ex. 77 000 00 00")
+        adresse = st.text_input("Adresse précise *", placeholder="Maison, rue, point de repère...")
+    with col2:
+        paiement = st.selectbox("💳 Mode de paiement", ["Présentiel (À la livraison)","Wave","Orange Money"])
+        date_min = datetime.now() + timedelta(days=1 if region_selectionnee in ["Saint-Louis","Dakar"] else 2)
+        date_livraison = st.date_input("📅 Date souhaitée", value=date_min, min_value=datetime.now().date())
+        creneau_horaire = st.selectbox("🕐 Créneau", ["Matin (08h00 - 12h00)","Après-midi (13h00 - 17h00)","Fin de journée (17h00 - 20h00)"])
+
+    commentaire = st.text_area("📝 Instruction pour le livreur (facultatif)", placeholder="Ex. Appeler 10 minutes avant d'arriver.")
+
+    code_promo = st.text_input("🎟️ Code promo (facultatif)").strip()
+    remise = int(total_financier * 0.10) if code_promo.upper() == "YOU2026" else 0
+    if code_promo.upper() == "YOU2026":
+        st.success("🎉 Code valide : 10 % de remise.")
+
+    total_final_net = total_financier + frais_livraison - remise
+    st.markdown("## 4️⃣ Récapitulatif")
+    r1,r2,r3 = st.columns(3)
+    r1.metric("Articles", total_articles)
+    r2.metric("Sous-total", f"{total_financier:,} FCFA")
+    r3.metric("Total à payer", f"{total_final_net:,} FCFA")
+    st.caption(f"Livraison : {frais_livraison:,} FCFA · Remise : {remise:,} FCFA")
+
+    st.markdown("## 5️⃣ Confirmer")
+    if paiement in ["Wave","Orange Money"]:
+        st.info("💳 Après confirmation, effectuez le transfert au **+221 77 747 31 70**.")
+
+    if st.button("🚀 Confirmer et envoyer la commande", use_container_width=True, type="primary"):
+        if not nom or not telephone or not adresse:
+            st.error("⚠️ Remplissez les champs obligatoires : nom, téléphone et adresse.")
+        else:
+            texte_produits = "\n".join(
+                f"• {p['produit']} x {p['quantite']} — {p.get('prix','')}" for p in panier
+            )
+            message = f"""🌾 COMMANDE YOUAGRONOME SÉNÉGAL
+
+👤 DESTINATAIRE
+Nom : {nom}
+Téléphone : {telephone}
+Région : {region_selectionnee}
+Zone : {commune_selectionnee}
+Adresse : {adresse}
+
+📅 LIVRAISON
+Date : {date_livraison.strftime('%d/%m/%Y')}
+Créneau : {creneau_horaire}
+
+📦 PANIER
+{texte_produits}
+
+💰 SOUS-TOTAL : {total_financier:,} FCFA
+🚚 LIVRAISON : {frais_livraison:,} FCFA
+📉 REMISE : {remise:,} FCFA
+💵 TOTAL : {total_final_net:,} FCFA
+💳 PAIEMENT : {paiement}
+📝 INSTRUCTIONS : {commentaire or 'Aucune'}"""
+
+            html_facture = f"""
+            <div style="font-family:Arial;padding:25px;border:1px solid #c8e6c9;border-radius:12px;">
+            <h2 style="color:#1B5E20;text-align:center;">YOUAGRONOME SÉNÉGAL</h2>
+            <p><b>Client :</b> {nom}<br><b>Téléphone :</b> {telephone}<br>
+            <b>Zone :</b> {region_selectionnee} — {commune_selectionnee}<br>
+            <b>Adresse :</b> {adresse}<br><b>Date :</b> {date_livraison.strftime('%d/%m/%Y')} — {creneau_horaire}</p>
+            <hr><p>{texte_produits.replace(chr(10), '<br>')}</p><hr>
+            <p><b>Sous-total :</b> {total_financier:,} FCFA<br>
+            <b>Livraison :</b> {frais_livraison:,} FCFA<br>
+            <b>Remise :</b> -{remise:,} FCFA<br>
+            <b>Total :</b> {total_final_net:,} FCFA</p>
+            </div>"""
+
+            whatsapp_link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + urllib.parse.quote(message)
+            email_link = f"mailto:{EMAIL_DEST}?subject=Commande YouAgronoMe - {nom}&body=" + urllib.parse.quote(message)
+
+            st.session_state.historique.append({
+                "client": nom,
+                "telephone": telephone,
+                "region": region_selectionnee,
+                "zone": commune_selectionnee,
+                "paiement": paiement,
+                "total": f"{total_final_net:,} FCFA",
+                "commande": panier.copy(),
+                "brut_texte": message,
+                "html_facture": html_facture
+            })
+
+            st.success("🎉 Commande préparée avec succès. Choisissez maintenant le canal d'envoi.")
+            a,b = st.columns(2)
+            with a:
+                st.link_button("📱 Envoyer sur WhatsApp", whatsapp_link, use_container_width=True)
+            with b:
+                st.link_button("📧 Envoyer par e-mail", email_link, use_container_width=True)
+
+    if st.button("🧹 Vider le panier", use_container_width=True):
+        st.session_state.panier = []
+        st.rerun()
+
+    st.markdown("### 💡 Besoin d'aide ?")
+    with st.expander("Comment savoir si ma commande est bien passée ?"):
+        st.write("Après avoir cliqué sur « Confirmer et envoyer la commande », un message prérempli est créé. Envoyez-le par WhatsApp ou e-mail. La commande est alors transmise avec les coordonnées, les produits, les quantités et le montant.")
+    with st.expander("Puis-je modifier ma commande ?"):
+        st.write("Oui. Modifiez les quantités ou supprimez un article dans la section Panier avant de confirmer.")
+    with st.expander("Quand vais-je être livré ?"):
+        st.write("Le délai affiché est une estimation selon la zone sélectionnée. L'équipe confirme ensuite les modalités de livraison.")
+    with st.expander("Comment payer ?"):
+        st.write("Vous pouvez choisir le paiement à la livraison, Wave ou Orange Money. Pour un paiement mobile, le numéro indiqué après confirmation est +221 77 747 31 70.")
+
 # =====================================================
 elif selected == "Réalisations":
     import urllib.parse
