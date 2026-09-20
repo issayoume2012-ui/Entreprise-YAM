@@ -18,20 +18,73 @@ st.set_page_config(
 # =====================================================
 # En production, il est recommandé de mettre SUPABASE_DB_URL dans
 # les Secrets Streamlit plutôt que de conserver le mot de passe dans le code.
-SUPABASE_DB_URL = st.secrets.get(
-    "SUPABASE_DB_URL",
-    os.getenv(
-        "SUPABASE_DB_URL",
-        "postgresql://postgres.civpzejlhnbykrophbyf:kCac9LKQ17yxylcO@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
-    )
+# =====================================================
+# CONNEXION ROBUSTE SUPABASE / POSTGRESQL
+# =====================================================
+# Le site privilégie les Secrets Streamlit.
+# sslmode=require est nécessaire/recommandé avec le pooler Supabase.
+
+def _secret(name, default=""):
+    try:
+        value = st.secrets.get(name, None)
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    except Exception:
+        pass
+    return os.getenv(name, default)
+
+SUPABASE_HOST = _secret(
+    "SUPABASE_HOST",
+    "aws-1-eu-west-1.pooler.supabase.com"
 )
+SUPABASE_PORT = _secret("SUPABASE_PORT", "5432")
+SUPABASE_DATABASE = _secret("SUPABASE_DATABASE", "postgres")
+SUPABASE_USER = _secret(
+    "SUPABASE_USER",
+    "postgres.civpzejlhnbykrophbyf"
+)
+SUPABASE_PASSWORD = _secret(
+    "SUPABASE_PASSWORD",
+    "kCac9LKQ17yxylcO"
+)
+SUPABASE_DB_URL = _secret("SUPABASE_DB_URL", "")
 
 def get_db_connection():
     try:
         import psycopg2
-        return psycopg2.connect(SUPABASE_DB_URL, connect_timeout=8)
+
+        # Si l'URL complète existe dans les Secrets, on l'utilise.
+        if SUPABASE_DB_URL:
+            return psycopg2.connect(
+                SUPABASE_DB_URL,
+                connect_timeout=15,
+                sslmode="require"
+            )
+
+        # Sinon, connexion avec les paramètres séparés.
+        return psycopg2.connect(
+            host=SUPABASE_HOST,
+            port=int(SUPABASE_PORT),
+            dbname=SUPABASE_DATABASE,
+            user=SUPABASE_USER,
+            password=SUPABASE_PASSWORD,
+            connect_timeout=15,
+            sslmode="require"
+        )
+
+    except ImportError:
+        st.error(
+            "❌ Le paquet psycopg2-binary n'est pas installé. "
+            "Ajoutez psycopg2-binary dans requirements.txt puis redéployez."
+        )
+        return None
     except Exception as e:
-        st.error("❌ Connexion Supabase/PostgreSQL impossible. Vérifiez SUPABASE_DB_URL et le paquet psycopg2-binary.")
+        st.error(
+            "❌ Connexion Supabase/PostgreSQL impossible. "
+            "Vérifiez les Secrets Streamlit et la connexion SSL."
+        )
+        with st.expander("🔎 Détails techniques"):
+            st.code(str(e))
         return None
 
 def init_database():
