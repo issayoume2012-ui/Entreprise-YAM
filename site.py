@@ -365,170 +365,6 @@ def image_source(produit):
         return produit["photo_bytes"]
     return produit.get("image", "")
 
-with st.sidebar:
-    st.markdown("## ⚙️ Paramètres")
-    st.caption("Espace réservé à l'administration du catalogue et des commandes.")
-
-    if not st.session_state.admin_connecte:
-        with st.form("admin_login_form"):
-            login_admin = st.text_input("Identifiant", placeholder="Identifiant administrateur")
-            mdp_admin = st.text_input("Mot de passe", type="password", placeholder="Mot de passe")
-            connexion = st.form_submit_button("🔐 Se connecter", use_container_width=True)
-            if connexion:
-                if login_admin == ADMIN_LOGIN and mdp_admin == ADMIN_PASSWORD:
-                    st.session_state.admin_connecte = True
-                    st.session_state.admin_page = "Produits"
-                    st.rerun()
-                else:
-                    st.error("Identifiant ou mot de passe incorrect.")
-    else:
-        st.success("🟢 Administrateur connecté")
-        st.caption("Vous pouvez modifier le catalogue sans rendre ces commandes visibles aux clients.")
-
-        admin_page = st.radio(
-            "Gestion",
-            ["Produits", "Commandes"],
-            index=0 if st.session_state.admin_page != "Commandes" else 1,
-            key="admin_navigation"
-        )
-        st.session_state.admin_page = admin_page
-
-        if st.button("🚪 Déconnexion", use_container_width=True):
-            st.session_state.admin_connecte = False
-            st.session_state.admin_page = None
-            st.rerun()
-
-    st.divider()
-    st.markdown("### 🛒 Comment commander ?")
-    st.markdown("""
-    **1. Produits** → choisissez un article disponible.  
-    **2. Quantité** → indiquez le nombre souhaité.  
-    **3. Panier** → vérifiez les articles et le total.  
-    **4. Livraison** → choisissez votre région et votre zone.  
-    **5. Coordonnées** → renseignez nom, téléphone et adresse.  
-    **6. Paiement** → choisissez le mode de règlement.  
-    **7. Confirmation** → envoyez la commande par WhatsApp ou e-mail.
-    """)
-
-# =====================================================
-# PANNEAU ADMINISTRATEUR
-# =====================================================
-if st.session_state.admin_connecte and st.session_state.admin_page == "Produits":
-    st.markdown("# ⚙️ Administration du catalogue")
-    st.info("Ici, vous pouvez **mettre un produit en vedette, modifier son prix, activer/désactiver sa disponibilité, modifier ses informations, supprimer un produit et ajouter de nouveaux produits avec photo**.")
-
-    produits = st.session_state.produits_admin
-
-    tab1, tab2 = st.tabs(["🧾 Gérer les produits", "➕ Ajouter un produit"])
-
-    with tab1:
-        if not produits:
-            st.warning("Aucun produit dans le catalogue.")
-        else:
-            for idx, prod in enumerate(produits):
-                with st.container(border=True):
-                    cimg, cmain, cact = st.columns([1, 4, 1])
-                    with cimg:
-                        src = image_source(prod)
-                        if src:
-                            try:
-                                st.image(src, width=100)
-                            except Exception:
-                                st.write("📦")
-                        else:
-                            st.write("📦")
-                    with cmain:
-                        st.markdown(f"### {prod['nom']}")
-                        a,b,c,d = st.columns(4)
-                        with a:
-                            prod["prix"] = st.number_input(
-                                "Prix (FCFA)", min_value=0, value=int(prod.get("prix",0)),
-                                step=100, key=f"adm_prix_{idx}"
-                            )
-                        with b:
-                            prod["dispo"] = st.toggle(
-                                "Disponible", value=bool(prod.get("dispo",True)),
-                                key=f"adm_dispo_{idx}"
-                            )
-                        with c:
-                            prod["vedette"] = st.toggle(
-                                "⭐ Vedette", value=bool(prod.get("vedette",False)),
-                                key=f"adm_vedette_{idx}"
-                            )
-                        with d:
-                            prod["tag"] = st.text_input(
-                                "Badge", value=prod.get("tag",""),
-                                key=f"adm_tag_{idx}"
-                            )
-                        d1,d2,d3 = st.columns(3)
-                        with d1:
-                            prod["nom"] = st.text_input("Nom du produit", value=prod["nom"], key=f"adm_nom_{idx}")
-                        with d2:
-                            prod["conditionnement"] = st.text_input("Conditionnement", value=prod["conditionnement"], key=f"adm_cond_{idx}")
-                        with d3:
-                            prod["origine"] = st.text_input("Origine", value=prod["origine"], key=f"adm_orig_{idx}")
-                    with cact:
-                        st.write("")
-                        if st.button("🗑️ Retirer", key=f"adm_delete_{idx}", use_container_width=True):
-                            st.session_state.produits_admin.pop(idx)
-                            st.rerun()
-
-    with tab2:
-        with st.form("ajout_produit_admin", clear_on_submit=True):
-            st.markdown("### ➕ Nouveau produit")
-            n1,n2 = st.columns(2)
-            with n1:
-                nouveau_nom = st.text_input("Nom du produit *")
-                nouveau_prix = st.number_input("Prix en FCFA *", min_value=0, value=1000, step=100)
-                nouveau_cond = st.text_input("Conditionnement", value="Unité")
-                nouvelle_cat = st.selectbox("Catégorie", ["Fruits & Légumes", "Céréales & Graines", "Irrigation & Équipements", "Autres"])
-            with n2:
-                nouvelle_origine = st.text_input("Origine", value="Sénégal")
-                nouveau_tag = st.text_input("Badge / étiquette", placeholder="⭐ Nouveau, 🔥 Promo...")
-                nouvelle_dispo = st.checkbox("Produit disponible", value=True)
-                nouvelle_vedette = st.checkbox("⭐ Mettre en vedette", value=False)
-                nouvelle_photo = st.file_uploader("📷 Photo du produit", type=["png","jpg","jpeg","webp"])
-
-            ajouter = st.form_submit_button("➕ Ajouter au catalogue", use_container_width=True, type="primary")
-            if ajouter:
-                if not nouveau_nom.strip():
-                    st.error("Le nom du produit est obligatoire.")
-                else:
-                    nouveau = {
-                        "image": "",
-                        "nom": nouveau_nom.strip(),
-                        "prix": int(nouveau_prix),
-                        "conditionnement": nouveau_cond.strip() or "Unité",
-                        "cat": nouvelle_cat,
-                        "tag": nouveau_tag.strip(),
-                        "origine": nouvelle_origine.strip() or "Sénégal",
-                        "dispo": nouvelle_dispo,
-                        "vedette": nouvelle_vedette,
-                    }
-                    if nouvelle_photo is not None:
-                        nouveau["photo_bytes"] = nouvelle_photo.getvalue()
-                    st.session_state.produits_admin.append(nouveau)
-                    st.success(f"✅ {nouveau['nom']} a été ajouté au catalogue.")
-                    st.rerun()
-
-    st.warning("ℹ️ Les modifications de cet espace sont conservées dans la session Streamlit actuelle. Pour une conservation permanente après redémarrage/déploiement, il faudra relier le catalogue à une base de données (par exemple Supabase).")
-    st.stop()
-
-if st.session_state.admin_connecte and st.session_state.admin_page == "Commandes":
-    st.markdown("# 📋 Administration des commandes")
-    st.info("Cette page permet de consulter les commandes créées pendant la session et de retrouver rapidement les informations utiles au traitement.")
-
-    historique = st.session_state.historique
-    if not historique:
-        st.warning("Aucune commande enregistrée dans cette session.")
-    else:
-        st.metric("Commandes enregistrées", len(historique))
-        for idx, cmd in enumerate(reversed(historique), start=1):
-            with st.expander(f"📦 Commande #{idx} — {cmd.get('client','Client')} — {cmd.get('total','')}", expanded=False):
-                st.write(f"**Mode de paiement :** {cmd.get('paiement','')}")
-                st.code(cmd.get("brut_texte",""), language=None)
-    st.stop()
-
 # =====================================================
 # SELECTION DU MENU VIA ST.RADIO
 # =====================================================
@@ -1300,89 +1136,249 @@ PROFIL TECHNIQUE      : Énergie: {source_energie} | Irrigation: {type_irrigatio
 # =====================================================
 elif selected == "Contact":
 
-    # ================= 1. EN-TÊTE DE LA PAGE =================
-    st.markdown("""
-    <div style="text-align:center; margin-bottom: 25px;">
-        <h1 style="color: #1b5e20;">🤝 Rejoignez l'Alliance YouAgronoMe</h1>
-        <p style="font-size: 1.1rem; color: #555;">
-            Une opportunité de co-développement ? Un projet pilote régional au Sénégal ? Échangeons dès aujourd'hui.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    tab_contact, tab_param = st.tabs(["📞 Contact", "⚙️ Paramètres"])
 
-    # ================= 2. CARTES D'INFORMATION (SANS TRONCATURE) =================
-    st.markdown("""
-    <div style="display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; margin-bottom: 25px;">
-        <div style="flex: 1; min-width: 220px; background-color: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
-            <span style="font-size: 0.9rem; color: #64748b; font-weight: 600;">📞 Standard d'Innovation</span>
-            <div style="font-size: 1.2rem; font-weight: bold; color: #1e293b; margin-top: 5px;">+221 77 747 31 70</div>
+    with tab_contact:
+
+
+        # ================= 1. EN-TÊTE DE LA PAGE =================
+        st.markdown("""
+        <div style="text-align:center; margin-bottom: 25px;">
+            <h1 style="color: #1b5e20;">🤝 Rejoignez l'Alliance YouAgronoMe</h1>
+            <p style="font-size: 1.1rem; color: #555;">
+                Une opportunité de co-développement ? Un projet pilote régional au Sénégal ? Échangeons dès aujourd'hui.
+            </p>
         </div>
-        <div style="flex: 1; min-width: 220px; background-color: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
-            <span style="font-size: 0.9rem; color: #64748b; font-weight: 600;">📍 Hub d'Ancrage</span>
-            <div style="font-size: 1.2rem; font-weight: bold; color: #1e293b; margin-top: 5px;">Saint-Louis, Sénégal</div>
+        """, unsafe_allow_html=True)
+
+        # ================= 2. CARTES D'INFORMATION (SANS TRONCATURE) =================
+        st.markdown("""
+        <div style="display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; margin-bottom: 25px;">
+            <div style="flex: 1; min-width: 220px; background-color: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
+                <span style="font-size: 0.9rem; color: #64748b; font-weight: 600;">📞 Standard d'Innovation</span>
+                <div style="font-size: 1.2rem; font-weight: bold; color: #1e293b; margin-top: 5px;">+221 77 747 31 70</div>
+            </div>
+            <div style="flex: 1; min-width: 220px; background-color: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
+                <span style="font-size: 0.9rem; color: #64748b; font-weight: 600;">📍 Hub d'Ancrage</span>
+                <div style="font-size: 1.2rem; font-weight: bold; color: #1e293b; margin-top: 5px;">Saint-Louis, Sénégal</div>
+            </div>
+            <div style="flex: 1; min-width: 220px; background-color: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
+                <span style="font-size: 0.9rem; color: #64748b; font-weight: 600;">⚡ Réactivité Sprint</span>
+                <div style="font-size: 1.2rem; font-weight: bold; color: #1e293b; margin-top: 5px;">Moins de 12 heures</div>
+            </div>
         </div>
-        <div style="flex: 1; min-width: 220px; background-color: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
-            <span style="font-size: 0.9rem; color: #64748b; font-weight: 600;">⚡ Réactivité Sprint</span>
-            <div style="font-size: 1.2rem; font-weight: bold; color: #1e293b; margin-top: 5px;">Moins de 12 heures</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    st.write("---")
+        st.write("---")
 
-    # ================= 3. FORMULAIRE & GUIDE DE SYNERGIE =================
-    col_form, col_FAQ = st.columns([3, 2])
+        # ================= 3. FORMULAIRE & GUIDE DE SYNERGIE =================
+        col_form, col_FAQ = st.columns([3, 2])
 
-    with col_form:
-        st.subheader("📩 Soumettre une initiative / Demander une démo")
-        
-        with st.form("contact_form", clear_on_submit=True):
-            nom = st.text_input("Votre Nom complet / Institution *", placeholder="Ex: Direction de l'Horticulture, GIE Unité Maraîchère...")
-            email = st.text_input("Votre Adresse Email Professionnelle *")
-            
-            departement = st.selectbox(
-                "Objet stratégique de votre démarche :",
-                [
-                    "🏛️ Partenariat Institutionnel (Ministères / Directions / Agences)",
-                    "🌾 Déploiement d'un Projet Pilote sur le Terrain",
-                    "📊 Intégration de notre IA à vos données existantes",
-                    "💡 Autre demande de collaboration"
-                ]
+        with col_form:
+            st.subheader("📩 Soumettre une initiative / Demander une démo")
+
+            with st.form("contact_form", clear_on_submit=True):
+                nom = st.text_input("Votre Nom complet / Institution *", placeholder="Ex: Direction de l'Horticulture, GIE Unité Maraîchère...")
+                email = st.text_input("Votre Adresse Email Professionnelle *")
+
+                departement = st.selectbox(
+                    "Objet stratégique de votre démarche :",
+                    [
+                        "🏛️ Partenariat Institutionnel (Ministères / Directions / Agences)",
+                        "🌾 Déploiement d'un Projet Pilote sur le Terrain",
+                        "📊 Intégration de notre IA à vos données existantes",
+                        "💡 Autre demande de collaboration"
+                    ]
+                )
+
+                msg = st.text_area("Présentez brièvement votre besoin ou idée d'alliance *", placeholder="Décrivez votre projet pilote, la région cible ou vos questions techniques...")
+
+                submit_button = st.form_submit_button("Lancer la mise en relation")
+
+                if submit_button:
+                    if not nom or not email or not msg:
+                        st.error("⚠️ Veuillez remplir tous les champs obligatoires (marqués par un *).")
+                    elif "@" not in email:
+                        st.error("⚠️ Veuillez entrer une adresse email valide.")
+                    else:
+                        st.success(f"Félicitations {nom} ! Votre demande de contact axée sur '{departement}' a été reçue en priorité. Notre cellule d'innovation à Saint-Louis vous contactera sous peu à l'adresse : {email}.")
+
+        with col_FAQ:
+            st.subheader("💡 Guide rapide des Synergies")
+            st.markdown(
+                "En tant que startup agile, nous nous connectons rapidement aux processus des institutions publiques :"
             )
-            
-            msg = st.text_area("Présentez brièvement votre besoin ou idée d'alliance *", placeholder="Décrivez votre projet pilote, la région cible ou vos questions techniques...")
 
-            submit_button = st.form_submit_button("Lancer la mise en relation")
+            with st.expander("🏛️ Intégration Ministères & Agences"):
+                st.write("""
+                YouAgronoMe est conçue pour s'imbriquer avec les plans d'action de l'État (ex: souveraineté alimentaire). 
+                Nous fournissons des outils d'analyse de données (IA) faciles à adopter, sans lourdeurs administratives.
+                """)
 
-            if submit_button:
-                if not nom or not email or not msg:
-                    st.error("⚠️ Veuillez remplir tous les champs obligatoires (marqués par un *).")
-                elif "@" not in email:
-                    st.error("⚠️ Veuillez entrer une adresse email valide.")
-                else:
-                    st.success(f"Félicitations {nom} ! Votre demande de contact axée sur '{departement}' a été reçue en priorité. Notre cellule d'innovation à Saint-Louis vous contactera sous peu à l'adresse : {email}.")
+            with st.expander("🚀 Lancement de Projets Pilotes"):
+                st.write("""
+                Vous souhaitez tester notre technologie d'irrigation intelligente ou d'analyse prédictive sur une commune spécifique ? 
+                Nous pouvons monter un projet pilote opérationnel en moins de 15 jours.
+                """)
 
-    with col_FAQ:
-        st.subheader("💡 Guide rapide des Synergies")
-        st.markdown(
-            "En tant que startup agile, nous nous connectons rapidement aux processus des institutions publiques :"
-        )
-        
-        with st.expander("🏛️ Intégration Ministères & Agences"):
-            st.write("""
-            YouAgronoMe est conçue pour s'imbriquer avec les plans d'action de l'État (ex: souveraineté alimentaire). 
-            Nous fournissons des outils d'analyse de données (IA) faciles à adopter, sans lourdeurs administratives.
-            """)
-            
-        with st.expander("🚀 Lancement de Projets Pilotes"):
-            st.write("""
-            Vous souhaitez tester notre technologie d'irrigation intelligente ou d'analyse prédictive sur une commune spécifique ? 
-            Nous pouvons monter un projet pilote opérationnel en moins de 15 jours.
-            """)
-            
-        with st.expander("📞 Urgences et Discussions Directes"):
-            st.write("""
-            Pour un échange rapide concernant une opportunité de financement (DER/FJ, 3FPT), un co-développement ou une démo en direct, appelez directement notre fondateur au **+221 77 747 31 70**.
-            """)
-            
-        st.info("✉️ **Email direct de la direction :** issayoume2012@gmail.com")
+            with st.expander("📞 Urgences et Discussions Directes"):
+                st.write("""
+                Pour un échange rapide concernant une opportunité de financement (DER/FJ, 3FPT), un co-développement ou une démo en direct, appelez directement notre fondateur au **+221 77 747 31 70**.
+                """)
+
+            st.info("✉️ **Email direct de la direction :** issayoume2012@gmail.com")
+
+
+    with tab_param:
+        st.subheader("⚙️ Paramètres administrateur")
+        st.caption("Espace privé pour gérer les produits et consulter les commandes.")
+
+        if not st.session_state.admin_connecte:
+            st.info("🔐 Cette section est réservée à l'administrateur.")
+            with st.form("admin_login_contact"):
+                login_admin = st.text_input("Identifiant", placeholder="Identifiant administrateur")
+                mdp_admin = st.text_input("Mot de passe", type="password", placeholder="Mot de passe")
+                connexion = st.form_submit_button("🔐 Se connecter", use_container_width=True)
+                if connexion:
+                    if login_admin == ADMIN_LOGIN and mdp_admin == ADMIN_PASSWORD:
+                        st.session_state.admin_connecte = True
+                        st.session_state.admin_page = "Produits"
+                        st.rerun()
+                    else:
+                        st.error("❌ Identifiant ou mot de passe incorrect.")
+        else:
+            st.success("🟢 Administrateur connecté")
+            st.caption("Les clients ne voient pas les fonctions de gestion.")
+            choix_admin = st.radio(
+                "Que souhaitez-vous gérer ?",
+                ["Produits", "Commandes"],
+                horizontal=True,
+                index=0 if st.session_state.admin_page != "Commandes" else 1,
+                key="admin_navigation_contact"
+            )
+            st.session_state.admin_page = choix_admin
+
+            if st.button("🚪 Déconnexion", use_container_width=False):
+                st.session_state.admin_connecte = False
+                st.session_state.admin_page = None
+                st.rerun()
+
+    # =====================================================
+    # PANNEAU ADMINISTRATEUR
+    # =====================================================
+    if st.session_state.admin_connecte and st.session_state.admin_page == "Produits":
+        st.markdown("# ⚙️ Administration du catalogue")
+        st.info("Ici, vous pouvez **mettre un produit en vedette, modifier son prix, activer/désactiver sa disponibilité, modifier ses informations, supprimer un produit et ajouter de nouveaux produits avec photo**.")
+
+        produits = st.session_state.produits_admin
+
+        tab1, tab2 = st.tabs(["🧾 Gérer les produits", "➕ Ajouter un produit"])
+
+        with tab1:
+            if not produits:
+                st.warning("Aucun produit dans le catalogue.")
+            else:
+                for idx, prod in enumerate(produits):
+                    with st.container(border=True):
+                        cimg, cmain, cact = st.columns([1, 4, 1])
+                        with cimg:
+                            src = image_source(prod)
+                            if src:
+                                try:
+                                    st.image(src, width=100)
+                                except Exception:
+                                    st.write("📦")
+                            else:
+                                st.write("📦")
+                        with cmain:
+                            st.markdown(f"### {prod['nom']}")
+                            a,b,c,d = st.columns(4)
+                            with a:
+                                prod["prix"] = st.number_input(
+                                    "Prix (FCFA)", min_value=0, value=int(prod.get("prix",0)),
+                                    step=100, key=f"adm_prix_{idx}"
+                                )
+                            with b:
+                                prod["dispo"] = st.toggle(
+                                    "Disponible", value=bool(prod.get("dispo",True)),
+                                    key=f"adm_dispo_{idx}"
+                                )
+                            with c:
+                                prod["vedette"] = st.toggle(
+                                    "⭐ Vedette", value=bool(prod.get("vedette",False)),
+                                    key=f"adm_vedette_{idx}"
+                                )
+                            with d:
+                                prod["tag"] = st.text_input(
+                                    "Badge", value=prod.get("tag",""),
+                                    key=f"adm_tag_{idx}"
+                                )
+                            d1,d2,d3 = st.columns(3)
+                            with d1:
+                                prod["nom"] = st.text_input("Nom du produit", value=prod["nom"], key=f"adm_nom_{idx}")
+                            with d2:
+                                prod["conditionnement"] = st.text_input("Conditionnement", value=prod["conditionnement"], key=f"adm_cond_{idx}")
+                            with d3:
+                                prod["origine"] = st.text_input("Origine", value=prod["origine"], key=f"adm_orig_{idx}")
+                        with cact:
+                            st.write("")
+                            if st.button("🗑️ Retirer", key=f"adm_delete_{idx}", use_container_width=True):
+                                st.session_state.produits_admin.pop(idx)
+                                st.rerun()
+
+        with tab2:
+            with st.form("ajout_produit_admin", clear_on_submit=True):
+                st.markdown("### ➕ Nouveau produit")
+                n1,n2 = st.columns(2)
+                with n1:
+                    nouveau_nom = st.text_input("Nom du produit *")
+                    nouveau_prix = st.number_input("Prix en FCFA *", min_value=0, value=1000, step=100)
+                    nouveau_cond = st.text_input("Conditionnement", value="Unité")
+                    nouvelle_cat = st.selectbox("Catégorie", ["Fruits & Légumes", "Céréales & Graines", "Irrigation & Équipements", "Autres"])
+                with n2:
+                    nouvelle_origine = st.text_input("Origine", value="Sénégal")
+                    nouveau_tag = st.text_input("Badge / étiquette", placeholder="⭐ Nouveau, 🔥 Promo...")
+                    nouvelle_dispo = st.checkbox("Produit disponible", value=True)
+                    nouvelle_vedette = st.checkbox("⭐ Mettre en vedette", value=False)
+                    nouvelle_photo = st.file_uploader("📷 Photo du produit", type=["png","jpg","jpeg","webp"])
+
+                ajouter = st.form_submit_button("➕ Ajouter au catalogue", use_container_width=True, type="primary")
+                if ajouter:
+                    if not nouveau_nom.strip():
+                        st.error("Le nom du produit est obligatoire.")
+                    else:
+                        nouveau = {
+                            "image": "",
+                            "nom": nouveau_nom.strip(),
+                            "prix": int(nouveau_prix),
+                            "conditionnement": nouveau_cond.strip() or "Unité",
+                            "cat": nouvelle_cat,
+                            "tag": nouveau_tag.strip(),
+                            "origine": nouvelle_origine.strip() or "Sénégal",
+                            "dispo": nouvelle_dispo,
+                            "vedette": nouvelle_vedette,
+                        }
+                        if nouvelle_photo is not None:
+                            nouveau["photo_bytes"] = nouvelle_photo.getvalue()
+                        st.session_state.produits_admin.append(nouveau)
+                        st.success(f"✅ {nouveau['nom']} a été ajouté au catalogue.")
+                        st.rerun()
+
+        st.warning("ℹ️ Les modifications de cet espace sont conservées dans la session Streamlit actuelle. Pour une conservation permanente après redémarrage/déploiement, il faudra relier le catalogue à une base de données (par exemple Supabase).")
+        st.stop()
+
+    if st.session_state.admin_connecte and st.session_state.admin_page == "Commandes":
+        st.markdown("# 📋 Administration des commandes")
+        st.info("Cette page permet de consulter les commandes créées pendant la session et de retrouver rapidement les informations utiles au traitement.")
+
+        historique = st.session_state.historique
+        if not historique:
+            st.warning("Aucune commande enregistrée dans cette session.")
+        else:
+            st.metric("Commandes enregistrées", len(historique))
+            for idx, cmd in enumerate(reversed(historique), start=1):
+                with st.expander(f"📦 Commande #{idx} — {cmd.get('client','Client')} — {cmd.get('total','')}", expanded=False):
+                    st.write(f"**Mode de paiement :** {cmd.get('paiement','')}")
+                    st.code(cmd.get("brut_texte",""), language=None)
+        st.stop()
+
