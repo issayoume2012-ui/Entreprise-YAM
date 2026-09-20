@@ -2,6 +2,8 @@ import streamlit as st
 import time
 import urllib.parse
 import base64
+import os
+import json
 from datetime import datetime, timedelta  #=====================================================
 # CONFIG (Exécuté une seule fois, au tout début)
 # =====================================================
@@ -10,6 +12,175 @@ st.set_page_config(
     page_icon="🌾",
     layout="wide"
 )
+
+# =====================================================
+# BASE DE DONNÉES SUPABASE / POSTGRESQL
+# =====================================================
+# En production, il est recommandé de mettre SUPABASE_DB_URL dans
+# les Secrets Streamlit plutôt que de conserver le mot de passe dans le code.
+SUPABASE_DB_URL = st.secrets.get(
+    "SUPABASE_DB_URL",
+    os.getenv(
+        "SUPABASE_DB_URL",
+        "postgresql://postgres.civpzejlhnbykrophbyf:kCac9LKQ17yxylcO@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
+    )
+)
+
+def get_db_connection():
+    try:
+        import psycopg2
+        return psycopg2.connect(SUPABASE_DB_URL, connect_timeout=8)
+    except Exception as e:
+        st.error("❌ Connexion Supabase/PostgreSQL impossible. Vérifiez SUPABASE_DB_URL et le paquet psycopg2-binary.")
+        return None
+
+def init_database():
+    conn = get_db_connection()
+    if conn is None:
+        return False
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS produits (
+                id BIGSERIAL PRIMARY KEY,
+                nom TEXT NOT NULL,
+                prix INTEGER NOT NULL DEFAULT 0,
+                conditionnement TEXT NOT NULL DEFAULT 'Unité',
+                cat TEXT NOT NULL DEFAULT 'Autres',
+                tag TEXT DEFAULT '',
+                origine TEXT DEFAULT 'Sénégal',
+                dispo BOOLEAN NOT NULL DEFAULT TRUE,
+                vedette BOOLEAN NOT NULL DEFAULT FALSE,
+                image TEXT DEFAULT '',
+                photo BYTEA,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS commandes (
+                id BIGSERIAL PRIMARY KEY,
+                client TEXT NOT NULL,
+                telephone TEXT NOT NULL,
+                region TEXT,
+                zone TEXT,
+                adresse TEXT,
+                date_livraison DATE,
+                creneau TEXT,
+                paiement TEXT,
+                commentaire TEXT,
+                sous_total INTEGER NOT NULL DEFAULT 0,
+                livraison INTEGER NOT NULL DEFAULT 0,
+                remise INTEGER NOT NULL DEFAULT 0,
+                total INTEGER NOT NULL DEFAULT 0,
+                statut TEXT NOT NULL DEFAULT 'Nouvelle',
+                produits JSONB NOT NULL DEFAULT '[]'::jsonb,
+                message TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        st.error(f"❌ Erreur d'initialisation Supabase : {e}")
+        return False
+
+def seed_products_if_empty():
+    conn = get_db_connection()
+    if conn is None:
+        return False
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM produits")
+        count = cur.fetchone()[0]
+        if count == 0:
+            for p in DEFAULT_PRODUCTS:
+                cur.execute(
+                    "INSERT INTO produits (nom, prix, conditionnement, cat, tag, origine, dispo, vedette, image) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (p["nom"], p["prix"], p["conditionnement"], p["cat"], p.get("tag",""), p.get("origine","Sénégal"), p.get("dispo",True), p.get("vedette",False), p.get("image",""))
+                )
+            conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        st.error(f"❌ Erreur de migration des produits : {e}")
+        return False
+
+def load_products_from_db():
+    conn = get_db_connection()
+    if conn is None:
+        return []
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, nom, prix, conditionnement, cat, tag, origine, dispo, vedette, image, photo FROM produits ORDER BY id")
+        rows = cur.fetchall()
+        products = []
+        for r in rows:
+            p = {"id": r[0], "nom": r[1], "prix": r[2], "conditionnement": r[3], "cat": r[4], "tag": r[5] or "", "origine": r[6] or "Sénégal", "dispo": r[7], "vedette": r[8], "image": r[9] or ""}
+            if r[10] is not None:
+                p["photo_bytes"] = bytes(r[10])
+            products.append(p)
+        cur.close(); conn.close()
+        return products
+    except Exception as e:
+        conn.close()
+        st.error(f"❌ Lecture des produits impossible : {e}")
+        return []
+
+def save_product_to_db(prod):
+    conn = get_db_connection()
+    if conn is None: return False
+    try:
+        cur = conn.cursor()
+        photo = prod.get("photo_bytes")
+        if prod.get("id"):
+            cur.execute("""UPDATE produits SET nom=%s, prix=%s, conditionnement=%s, cat=%s, tag=%s, origine=%s, dispo=%s, vedette=%s, image=%s, photo=%s, updated_at=NOW() WHERE id=%s""",
+                        (prod["nom"], prod["prix"], prod["conditionnement"], prod["cat"], prod.get("tag",""), prod.get("origine","Sénégal"), prod.get("dispo",True), prod.get("vedette",False), prod.get("image",""), photo, prod["id"]))
+        else:
+            cur.execute("""INSERT INTO produits (nom, prix, conditionnement, cat, tag, origine, dispo, vedette, image, photo) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",
+                        (prod["nom"], prod["prix"], prod["conditionnement"], prod["cat"], prod.get("tag",""), prod.get("origine","Sénégal"), prod.get("dispo",True), prod.get("vedette",False), prod.get("image",""), photo))
+            prod["id"] = cur.fetchone()[0]
+        conn.commit(); cur.close(); conn.close(); return True
+    except Exception as e:
+        conn.rollback(); conn.close(); st.error(f"❌ Enregistrement produit impossible : {e}"); return False
+
+def delete_product_from_db(product_id):
+    conn = get_db_connection()
+    if conn is None: return False
+    try:
+        cur = conn.cursor(); cur.execute("DELETE FROM produits WHERE id=%s", (product_id,)); conn.commit(); cur.close(); conn.close(); return True
+    except Exception as e:
+        conn.rollback(); conn.close(); st.error(f"❌ Suppression impossible : {e}"); return False
+
+def save_order_to_db(data):
+    conn = get_db_connection()
+    if conn is None: return False
+    try:
+        cur = conn.cursor()
+        cur.execute("""INSERT INTO commandes (client, telephone, region, zone, adresse, date_livraison, creneau, paiement, commentaire, sous_total, livraison, remise, total, produits, message)
+                      VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s) RETURNING id""",
+                    (data["client"], data["telephone"], data.get("region"), data.get("zone"), data.get("adresse"), data.get("date_livraison"), data.get("creneau"), data.get("paiement"), data.get("commentaire",""), data["sous_total"], data["livraison"], data["remise"], data["total"], json.dumps(data["produits"], ensure_ascii=False, default=str), data.get("message","")))
+        order_id = cur.fetchone()[0]; conn.commit(); cur.close(); conn.close(); return order_id
+    except Exception as e:
+        conn.rollback(); conn.close(); st.error(f"❌ Commande non sauvegardée dans Supabase : {e}"); return None
+
+def load_orders_from_db(limit=100):
+    conn = get_db_connection()
+    if conn is None: return []
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, client, telephone, region, zone, paiement, total, statut, created_at, produits, message FROM commandes ORDER BY created_at DESC LIMIT %s", (limit,))
+        rows = cur.fetchall(); cur.close(); conn.close()
+        return rows
+    except Exception as e:
+        conn.close(); st.error(f"❌ Lecture des commandes impossible : {e}"); return []
 
 # =====================================================
 # SESSION STATES
@@ -352,12 +523,20 @@ DEFAULT_PRODUCTS = [
     {"image":"sesame.jpg","nom":"Graines de sésame","prix":7500,"conditionnement":"Sac de 10Kg","cat":"Céréales & Graines","tag":"","origine":"Sédhiou","dispo":True,"vedette":False},
 ]
 
+
+# Initialisation et migration automatique Supabase/PostgreSQL
+if "db_ready" not in st.session_state:
+    st.session_state.db_ready = init_database()
+    if st.session_state.db_ready:
+        seed_products_if_empty()
+
+
 if "admin_connecte" not in st.session_state:
     st.session_state.admin_connecte = False
 if "admin_page" not in st.session_state:
     st.session_state.admin_page = None
 if "produits_admin" not in st.session_state:
-    st.session_state.produits_admin = DEFAULT_PRODUCTS.copy()
+    st.session_state.produits_admin = load_products_from_db() or DEFAULT_PRODUCTS.copy()
 
 def image_source(produit):
     """Retourne la source image d'un produit : upload en mémoire ou fichier existant."""
@@ -408,6 +587,30 @@ if selected == "Accueil":
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    # =====================================================
+    # PRODUITS EN VEDETTE SUR LA PAGE D'ACCUEIL
+    # =====================================================
+    produits_vedette_accueil = [p for p in st.session_state.produits_admin if p.get("vedette") and p.get("dispo")]
+    if produits_vedette_accueil:
+        st.markdown("<div style='font-size:1.5rem;color:#1b5e20;font-weight:800;margin:25px 0 15px;'>⭐ Produits en vedette</div>", unsafe_allow_html=True)
+        cols_v = st.columns(min(4, len(produits_vedette_accueil)))
+        for i, prod in enumerate(produits_vedette_accueil[:4]):
+            with cols_v[i % len(cols_v)]:
+                st.markdown("<div style='border:1px solid #e2e8f0;border-radius:14px;padding:12px;background:#fff;height:100%;'>", unsafe_allow_html=True)
+                src = image_source(prod)
+                if src:
+                    try: st.image(src, use_container_width=True)
+                    except Exception: pass
+                st.markdown(f"<h4 style='margin:8px 0 3px;color:#1b5e20;'>{prod['nom']}</h4>", unsafe_allow_html=True)
+                if prod.get("tag"): st.caption(prod["tag"])
+                st.markdown(f"**{int(prod['prix']):,} FCFA** · {prod['conditionnement']}")
+                st.caption(f"📍 {prod.get('origine','Sénégal')}")
+                if st.button("🛒 Commander", key=f"home_vedette_{prod.get('id',i)}", use_container_width=True):
+                    st.session_state.panier.append({"produit": prod["nom"], "quantite": 1, "prix": f"{int(prod['prix']):,} FCFA"})
+                    st.success(f"✅ {prod['nom']} ajouté au panier.")
+                st.markdown("</div>", unsafe_allow_html=True)
+        st.write("")
 
     # RECONNAISSANCE ET ENGAGEMENT DE CONFIANCE
     st.markdown("<div class='section-title' style='font-size: 1.4rem; color: #1b5e20; font-weight: 700; margin-bottom: 15px;'>🎯 Nos Engagements Opérationnels</div>", unsafe_allow_html=True)
@@ -795,6 +998,16 @@ Créneau : {creneau_horaire}
                 "brut_texte": message,
                 "html_facture": html_facture
             })
+
+            order_id = save_order_to_db({
+                "client": nom, "telephone": telephone, "region": region_selectionnee, "zone": commune_selectionnee,
+                "adresse": adresse, "date_livraison": date_livraison, "creneau": creneau_horaire,
+                "paiement": paiement, "commentaire": commentaire, "sous_total": total_financier,
+                "livraison": frais_livraison, "remise": remise, "total": total_final_net,
+                "produits": panier.copy(), "message": message
+            })
+            if order_id:
+                st.info(f"🗃️ Commande n°{order_id} enregistrée dans Supabase.")
 
             st.success("🎉 Commande préparée avec succès. Choisissez maintenant le canal d'envoi.")
             a,b = st.columns(2)
@@ -1322,9 +1535,14 @@ elif selected == "Contact":
                                 prod["origine"] = st.text_input("Origine", value=prod["origine"], key=f"adm_orig_{idx}")
                         with cact:
                             st.write("")
+                            if st.button("💾 Enregistrer", key=f"adm_save_{idx}", use_container_width=True):
+                                if save_product_to_db(prod):
+                                    st.success("Produit enregistré dans Supabase.")
+                                    st.rerun()
                             if st.button("🗑️ Retirer", key=f"adm_delete_{idx}", use_container_width=True):
-                                st.session_state.produits_admin.pop(idx)
-                                st.rerun()
+                                if prod.get("id") and delete_product_from_db(prod["id"]):
+                                    st.session_state.produits_admin.pop(idx)
+                                    st.rerun()
 
         with tab2:
             with st.form("ajout_produit_admin", clear_on_submit=True):
@@ -1360,25 +1578,34 @@ elif selected == "Contact":
                         }
                         if nouvelle_photo is not None:
                             nouveau["photo_bytes"] = nouvelle_photo.getvalue()
-                        st.session_state.produits_admin.append(nouveau)
-                        st.success(f"✅ {nouveau['nom']} a été ajouté au catalogue.")
-                        st.rerun()
+                        if save_product_to_db(nouveau):
+                            st.session_state.produits_admin.append(nouveau)
+                            st.success(f"✅ {nouveau['nom']} a été ajouté au catalogue et sauvegardé dans Supabase.")
+                            st.rerun()
+
+        st.success("☁️ Catalogue et commandes connectés à Supabase/PostgreSQL : les données restent disponibles après redémarrage ou redéploiement.")
+
+    # =====================================================
+    # PANNEAU COMMANDES SUPABASE
+    # =====================================================
+    if st.session_state.admin_connecte and st.session_state.admin_page == "Commandes":
+        st.markdown("# 📦 Commandes enregistrées")
+        orders = load_orders_from_db(100)
+        if not orders:
+            st.info("Aucune commande enregistrée pour le moment.")
+        else:
+            for row in orders:
+                oid, client, tel, region, zone, paiement_db, total_db, statut, created_at, produits_db, message_db = row
+                with st.expander(f"🧾 Commande #{oid} — {client} — {int(total_db):,} FCFA — {statut}"):
+                    c1,c2,c3 = st.columns(3)
+                    c1.write(f"**Téléphone :** {tel}")
+                    c2.write(f"**Zone :** {region or ''} — {zone or ''}")
+                    c3.write(f"**Paiement :** {paiement_db or ''}")
+                    st.write(f"**Date :** {created_at}")
+                    st.write("**Produits :**")
+                    st.json(produits_db)
+                    if message_db:
+                        st.text_area("Message de commande", message_db, height=180, key=f"order_msg_{oid}")
 
         st.warning("ℹ️ Les modifications de cet espace sont conservées dans la session Streamlit actuelle. Pour une conservation permanente après redémarrage/déploiement, il faudra relier le catalogue à une base de données (par exemple Supabase).")
         st.stop()
-
-    if st.session_state.admin_connecte and st.session_state.admin_page == "Commandes":
-        st.markdown("# 📋 Administration des commandes")
-        st.info("Cette page permet de consulter les commandes créées pendant la session et de retrouver rapidement les informations utiles au traitement.")
-
-        historique = st.session_state.historique
-        if not historique:
-            st.warning("Aucune commande enregistrée dans cette session.")
-        else:
-            st.metric("Commandes enregistrées", len(historique))
-            for idx, cmd in enumerate(reversed(historique), start=1):
-                with st.expander(f"📦 Commande #{idx} — {cmd.get('client','Client')} — {cmd.get('total','')}", expanded=False):
-                    st.write(f"**Mode de paiement :** {cmd.get('paiement','')}")
-                    st.code(cmd.get("brut_texte",""), language=None)
-        st.stop()
-
