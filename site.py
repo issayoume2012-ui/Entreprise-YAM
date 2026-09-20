@@ -50,39 +50,46 @@ SUPABASE_PASSWORD = _secret(
 SUPABASE_DB_URL = _secret("SUPABASE_DB_URL", "")
 
 def get_db_connection():
+    """Connexion PostgreSQL avec psycopg v3 ou psycopg2 v2."""
+    kwargs = {"connect_timeout": 15, "sslmode": "require"}
+
+    # Pilote recommandé : psycopg v3
+    try:
+        import psycopg
+        if SUPABASE_DB_URL:
+            return psycopg.connect(SUPABASE_DB_URL, **kwargs)
+        return psycopg.connect(
+            host=SUPABASE_HOST,
+            port=int(SUPABASE_PORT),
+            dbname=SUPABASE_DATABASE,
+            user=SUPABASE_USER,
+            password=SUPABASE_PASSWORD,
+            **kwargs
+        )
+    except ImportError:
+        pass
+
+    # Compatibilité : psycopg2
     try:
         import psycopg2
-
-        # Si l'URL complète existe dans les Secrets, on l'utilise.
         if SUPABASE_DB_URL:
-            return psycopg2.connect(
-                SUPABASE_DB_URL,
-                connect_timeout=15,
-                sslmode="require"
-            )
-
-        # Sinon, connexion avec les paramètres séparés.
+            return psycopg2.connect(SUPABASE_DB_URL, **kwargs)
         return psycopg2.connect(
             host=SUPABASE_HOST,
             port=int(SUPABASE_PORT),
             dbname=SUPABASE_DATABASE,
             user=SUPABASE_USER,
             password=SUPABASE_PASSWORD,
-            connect_timeout=15,
-            sslmode="require"
+            **kwargs
         )
-
     except ImportError:
         st.error(
-            "❌ Le paquet psycopg2-binary n'est pas installé. "
-            "Ajoutez psycopg2-binary dans requirements.txt puis redéployez."
+            "❌ Aucun pilote PostgreSQL n'est installé. "
+            "Ajoutez psycopg[binary] ou psycopg2-binary dans requirements.txt."
         )
         return None
     except Exception as e:
-        st.error(
-            "❌ Connexion Supabase/PostgreSQL impossible. "
-            "Vérifiez les Secrets Streamlit et la connexion SSL."
-        )
+        st.error("❌ Connexion PostgreSQL/Supabase impossible.")
         with st.expander("🔎 Détails techniques"):
             st.code(str(e))
         return None
