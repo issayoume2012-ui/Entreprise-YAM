@@ -50,64 +50,45 @@ SUPABASE_PASSWORD = _secret(
 SUPABASE_DB_URL = _secret("SUPABASE_DB_URL", "")
 
 def get_db_connection():
-    """Connexion PostgreSQL avec psycopg v3 ou psycopg2 v2."""
-    kwargs = {"connect_timeout": 15, "sslmode": "require"}
+    """Connexion PostgreSQL/Supabase avec psycopg2-binary.
 
-    # Pilote recommandé : psycopg v3
-    try:
-        import psycopg
-        if SUPABASE_DB_URL:
-            return psycopg.connect(SUPABASE_DB_URL, **kwargs)
-        return psycopg.connect(
-            host=SUPABASE_HOST,
-            port=int(SUPABASE_PORT),
-            dbname=SUPABASE_DATABASE,
-            user=SUPABASE_USER,
-            password=SUPABASE_PASSWORD,
-            **kwargs
-        )
-    except ImportError:
-        pass
-
-    # Compatibilité : psycopg2
+    On utilise volontairement psycopg2 ici : il est très stable sur Streamlit
+    Community Cloud et évite les conflits entre psycopg v3 et psycopg2.
+    """
     try:
         import psycopg2
+    except Exception as e:
+        st.error(
+            "❌ Le module `psycopg2` n'est pas installé dans l'environnement. "
+            "Vérifiez que `requirements.txt` est bien à la racine du dépôt, "
+            "puis redéployez/rebootez l'application."
+        )
+        with st.expander("🔎 Détails techniques"):
+            st.code(f"Import psycopg2 impossible : {type(e).__name__}: {e}")
+        return None
+
+    kwargs = {
+        "connect_timeout": 15,
+        "sslmode": "require",
+    }
+
+    try:
         if SUPABASE_DB_URL:
             return psycopg2.connect(SUPABASE_DB_URL, **kwargs)
+
         return psycopg2.connect(
             host=SUPABASE_HOST,
             port=int(SUPABASE_PORT),
             dbname=SUPABASE_DATABASE,
             user=SUPABASE_USER,
             password=SUPABASE_PASSWORD,
-            **kwargs
+            **kwargs,
         )
-    except ImportError as e1:
-        try:
-            import psycopg2
-            if SUPABASE_DB_URL:
-                return psycopg2.connect(SUPABASE_DB_URL, **kwargs)
-            return psycopg2.connect(
-                host=SUPABASE_HOST,
-                port=int(SUPABASE_PORT),
-                dbname=SUPABASE_DATABASE,
-                user=SUPABASE_USER,
-                password=SUPABASE_PASSWORD,
-                **kwargs
-            )
-        except ImportError as e2:
-            st.error(
-                "❌ Le pilote PostgreSQL n'est pas disponible dans l'environnement d'exécution. "
-                "Le fichier doit être nommé exactement `requirements.txt` et contenir "
-                "`psycopg[binary]` (ou `psycopg2-binary`)."
-            )
-            with st.expander("🔎 Détails techniques"):
-                st.code(f"psycopg: {e1}\\npsycopg2: {e2}")
-            return None
+
     except Exception as e:
         st.error("❌ Connexion PostgreSQL/Supabase impossible.")
         with st.expander("🔎 Détails techniques"):
-            st.code(str(e))
+            st.code(f"{type(e).__name__}: {e}")
         return None
 
 def init_database():
