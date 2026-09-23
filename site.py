@@ -82,12 +82,28 @@ def get_db_connection():
             password=SUPABASE_PASSWORD,
             **kwargs
         )
-    except ImportError:
-        st.error(
-            "❌ Aucun pilote PostgreSQL n'est installé. "
-            "Ajoutez psycopg[binary] ou psycopg2-binary dans requirements.txt."
-        )
-        return None
+    except ImportError as e1:
+        try:
+            import psycopg2
+            if SUPABASE_DB_URL:
+                return psycopg2.connect(SUPABASE_DB_URL, **kwargs)
+            return psycopg2.connect(
+                host=SUPABASE_HOST,
+                port=int(SUPABASE_PORT),
+                dbname=SUPABASE_DATABASE,
+                user=SUPABASE_USER,
+                password=SUPABASE_PASSWORD,
+                **kwargs
+            )
+        except ImportError as e2:
+            st.error(
+                "❌ Le pilote PostgreSQL n'est pas disponible dans l'environnement d'exécution. "
+                "Le fichier doit être nommé exactement `requirements.txt` et contenir "
+                "`psycopg[binary]` (ou `psycopg2-binary`)."
+            )
+            with st.expander("🔎 Détails techniques"):
+                st.code(f"psycopg: {e1}\\npsycopg2: {e2}")
+            return None
     except Exception as e:
         st.error("❌ Connexion PostgreSQL/Supabase impossible.")
         with st.expander("🔎 Détails techniques"):
