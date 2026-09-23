@@ -33,60 +33,38 @@ def _secret(name, default=""):
         pass
     return os.getenv(name, default)
 
-SUPABASE_HOST = _secret(
-    "SUPABASE_HOST",
-    "aws-1-eu-west-1.pooler.supabase.com"
-)
-SUPABASE_PORT = _secret("SUPABASE_PORT", "5432")
-SUPABASE_DATABASE = _secret("SUPABASE_DATABASE", "postgres")
-SUPABASE_USER = _secret(
-    "SUPABASE_USER",
-    "postgres.civpzejlhnbykrophbyf"
-)
-SUPABASE_PASSWORD = _secret(
-    "SUPABASE_PASSWORD",
-    "kCac9LKQ17yxylcO"
-)
-SUPABASE_DB_URL = _secret("SUPABASE_DB_URL", "")
+# Connexion PostgreSQL Supabase — paramètres fournis par le propriétaire de l'application.
+# Le mot de passe reste dans le code à la demande de l'utilisateur.
+SUPABASE_HOST = "aws-1-eu-west-1.pooler.supabase.com"
+SUPABASE_PORT = 5432
+SUPABASE_DATABASE = "postgres"
+SUPABASE_USER = "postgres.civpzejlhnbykrophbyf"
+SUPABASE_PASSWORD = "kCac9LKQ17yxylcO"
+
 
 def get_db_connection():
-    """Connexion PostgreSQL/Supabase avec psycopg2-binary.
-
-    On utilise volontairement psycopg2 ici : il est très stable sur Streamlit
-    Community Cloud et évite les conflits entre psycopg v3 et psycopg2.
-    """
+    """Connexion PostgreSQL directe via psycopg2-binary."""
     try:
         import psycopg2
     except Exception as e:
-        st.error(
-            "❌ Le module `psycopg2` n'est pas installé dans l'environnement. "
-            "Vérifiez que `requirements.txt` est bien à la racine du dépôt, "
-            "puis redéployez/rebootez l'application."
-        )
+        st.error("❌ Le pilote PostgreSQL n'est pas disponible dans cet environnement.")
         with st.expander("🔎 Détails techniques"):
             st.code(f"Import psycopg2 impossible : {type(e).__name__}: {e}")
+            st.info("Le fichier requirements.txt doit contenir psycopg2-binary et être installé lors du déploiement.")
         return None
 
-    kwargs = {
-        "connect_timeout": 15,
-        "sslmode": "require",
-    }
-
     try:
-        if SUPABASE_DB_URL:
-            return psycopg2.connect(SUPABASE_DB_URL, **kwargs)
-
         return psycopg2.connect(
             host=SUPABASE_HOST,
-            port=int(SUPABASE_PORT),
+            port=SUPABASE_PORT,
             dbname=SUPABASE_DATABASE,
             user=SUPABASE_USER,
             password=SUPABASE_PASSWORD,
-            **kwargs,
+            connect_timeout=20,
+            sslmode="require",
         )
-
     except Exception as e:
-        st.error("❌ Connexion PostgreSQL/Supabase impossible.")
+        st.error("❌ Connexion à Supabase/PostgreSQL impossible.")
         with st.expander("🔎 Détails techniques"):
             st.code(f"{type(e).__name__}: {e}")
         return None
@@ -114,6 +92,26 @@ def init_database():
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )
         """)
+        # Compatibilité avec une table produits déjà existante et incomplète.
+        for ddl in [
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS prix INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS conditionnement TEXT NOT NULL DEFAULT 'Unité'",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS cat TEXT NOT NULL DEFAULT 'Autres'",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS tag TEXT DEFAULT ''",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS origine TEXT DEFAULT 'Sénégal'",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS dispo BOOLEAN NOT NULL DEFAULT TRUE",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS vedette BOOLEAN NOT NULL DEFAULT FALSE",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS image TEXT DEFAULT ''",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS photo BYTEA",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()",
+            "ALTER TABLE produits ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()",
+        ]:
+            try:
+                cur.execute(ddl)
+            except Exception:
+                conn.rollback()
+                cur = conn.cursor()
+
         cur.execute("""
             CREATE TABLE IF NOT EXISTS commandes (
                 id BIGSERIAL PRIMARY KEY,
@@ -141,8 +139,11 @@ def init_database():
         conn.close()
         return True
     except Exception as e:
-        conn.rollback()
-        conn.close()
+        try:
+            conn.rollback()
+            conn.close()
+        except Exception:
+            pass
         st.error(f"❌ Erreur d'initialisation Supabase : {e}")
         return False
 
@@ -193,20 +194,57 @@ def load_products_from_db():
 
 def save_product_to_db(prod):
     conn = get_db_connection()
-    if conn is None: return False
+    if conn is None:
+        return False
     try:
         cur = conn.cursor()
         photo = prod.get("photo_bytes")
+        values = (
+            str(prod.get("nom", "")).strip(),
+            int(prod.get("prix", 0)),
+            str(prod.get("conditionnement", "Unité")).strip() or "Unité",
+            str(prod.get("cat", "Autres")).strip() or "Autres",
+            str(prod.get("tag", "")).strip(),
+            str(prod.get("origine", "Sénégal")).strip() or "Sénégal",
+            bool(prod.get("dispo", True)),
+            bool(prod.get("vedette", False)),
+            str(prod.get("image", "")),
+            photo,
+        )
+        if not values[0]:
+            raise ValueError("Le nom du produit est obligatoire.")
+
         if prod.get("id"):
-            cur.execute("""UPDATE produits SET nom=%s, prix=%s, conditionnement=%s, cat=%s, tag=%s, origine=%s, dispo=%s, vedette=%s, image=%s, photo=%s, updated_at=NOW() WHERE id=%s""",
-                        (prod["nom"], prod["prix"], prod["conditionnement"], prod["cat"], prod.get("tag",""), prod.get("origine","Sénégal"), prod.get("dispo",True), prod.get("vedette",False), prod.get("image",""), photo, prod["id"]))
+            cur.execute("""
+                UPDATE produits
+                   SET nom=%s, prix=%s, conditionnement=%s, cat=%s, tag=%s,
+                       origine=%s, dispo=%s, vedette=%s, image=%s, photo=%s,
+                       updated_at=NOW()
+                 WHERE id=%s
+            """, values + (int(prod["id"]),))
+            if cur.rowcount != 1:
+                raise ValueError(f"Produit ID {prod['id']} introuvable.")
         else:
-            cur.execute("""INSERT INTO produits (nom, prix, conditionnement, cat, tag, origine, dispo, vedette, image, photo) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id""",
-                        (prod["nom"], prod["prix"], prod["conditionnement"], prod["cat"], prod.get("tag",""), prod.get("origine","Sénégal"), prod.get("dispo",True), prod.get("vedette",False), prod.get("image",""), photo))
+            cur.execute("""
+                INSERT INTO produits
+                    (nom, prix, conditionnement, cat, tag, origine, dispo, vedette, image, photo)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                RETURNING id
+            """, values)
             prod["id"] = cur.fetchone()[0]
-        conn.commit(); cur.close(); conn.close(); return True
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
     except Exception as e:
-        conn.rollback(); conn.close(); st.error(f"❌ Enregistrement produit impossible : {e}"); return False
+        try:
+            conn.rollback()
+            conn.close()
+        except Exception:
+            pass
+        st.error(f"❌ Enregistrement produit impossible : {e}")
+        return False
 
 def delete_product_from_db(product_id):
     conn = get_db_connection()
@@ -1594,6 +1632,7 @@ elif selected == "Contact":
                             st.write("")
                             if st.button("💾 Enregistrer", key=f"adm_save_{idx}", use_container_width=True):
                                 if save_product_to_db(prod):
+                                    st.session_state.produits_admin = load_products_from_db()
                                     st.success("Produit enregistré dans Supabase.")
                                     st.rerun()
                             if st.button("🗑️ Retirer", key=f"adm_delete_{idx}", use_container_width=True):
@@ -1636,7 +1675,8 @@ elif selected == "Contact":
                         if nouvelle_photo is not None:
                             nouveau["photo_bytes"] = nouvelle_photo.getvalue()
                         if save_product_to_db(nouveau):
-                            st.session_state.produits_admin.append(nouveau)
+                            produits_db = load_products_from_db()
+                            st.session_state.produits_admin = produits_db
                             st.success(f"✅ {nouveau['nom']} a été ajouté au catalogue et sauvegardé dans Supabase.")
                             st.rerun()
 
